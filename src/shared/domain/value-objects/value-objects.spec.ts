@@ -32,7 +32,10 @@ describe('shared value objects', () => {
   });
 
   it('creates and validates work-order codes and years', () => {
-    expect(WorkOrderCode.generate().value).toMatch(/^OS-/);
+    const generatedCode = WorkOrderCode.generate();
+    expect(generatedCode.value).toMatch(/^OS-/);
+    expect(generatedCode.toJSON()).toBe(generatedCode.value);
+    expect(WorkOrderCode.create('OS-ABC123').value).toBe('OS-ABC123');
     expect(() => WorkOrderCode.create('x')).toThrow(DomainError);
     expect(VehicleYear.create(new Date().getFullYear()).value).toBe(new Date().getFullYear());
     expect(() => VehicleYear.create(1800)).toThrow(DomainError);
