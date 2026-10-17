@@ -6,7 +6,8 @@ PT: MVP de back-end para oficina mecânica com gestão de ordens de serviço, cl
 ## Running locally
 
 Copy `.env.example` to `.env`, start PostgreSQL with `docker compose up -d postgres`,
-install dependencies with `npm ci`, and run the API with `npm run start:dev`.
+use Node.js 20.11 or newer (`nvm use` reads the included `.nvmrc`), install
+dependencies with `npm ci`, and run the API with `npm run start:dev`.
 Swagger is available at `/docs`.
 
 ## Tests
