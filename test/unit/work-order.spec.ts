@@ -1,10 +1,10 @@
-import { Document } from '../../../shared/domain/value-objects/document';
-import { LicensePlate } from '../../../shared/domain/value-objects/license-plate';
-import { Money } from '../../../shared/domain/value-objects/money';
-import { Quantity } from '../../../shared/domain/value-objects/quantity';
-import { DomainError } from '../../../shared/domain/domain-error';
-import { WorkOrder } from './work-order';
-import { WorkOrderStatus } from './work-order-status';
+import { Document } from '../../src/shared/domain/value-objects/document';
+import { LicensePlate } from '../../src/shared/domain/value-objects/license-plate';
+import { Money } from '../../src/shared/domain/value-objects/money';
+import { Quantity } from '../../src/shared/domain/value-objects/quantity';
+import { DomainError } from '../../src/shared/domain/domain-error';
+import { WorkOrder } from '../../src/modules/work-order/entity/work-order';
+import { WorkOrderStatus } from '../../src/modules/work-order/entity/work-order-status';
 
 describe('WorkOrder', () => {
   const createOrder = () => WorkOrder.open({

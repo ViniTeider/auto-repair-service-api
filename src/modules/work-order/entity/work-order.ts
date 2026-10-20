@@ -4,6 +4,7 @@ import { LicensePlate } from '../../../shared/domain/value-objects/license-plate
 import { Money } from '../../../shared/domain/value-objects/money';
 import { Quantity } from '../../../shared/domain/value-objects/quantity';
 import { WorkOrderCode } from '../../../shared/domain/value-objects/work-order-code';
+import { CatalogItemKind } from '../../../shared/enums/catalog.enums';
 import { BudgetStatus, WorkOrderStatus } from './work-order-status';
 
 export type WorkOrderHistoryEntry = {
@@ -12,7 +13,7 @@ export type WorkOrderHistoryEntry = {
 };
 
 export type WorkOrderItem = {
-  kind: 'SERVICE' | 'PART';
+  kind: CatalogItemKind;
   referenceId: string;
   description: string;
   unitPrice: Money;

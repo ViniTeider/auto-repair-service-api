@@ -6,13 +6,13 @@ export class InitialSchema1710000000000 implements MigrationInterface {
   async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
       CREATE EXTENSION IF NOT EXISTS pgcrypto;
-      CREATE TABLE IF NOT EXISTS admin_users (
+      CREATE TABLE IF NOT EXISTS admin_user (
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         email varchar(255) NOT NULL UNIQUE,
         "passwordHash" varchar(255) NOT NULL,
         "createdAt" timestamptz NOT NULL DEFAULT now()
       );
-      CREATE TABLE IF NOT EXISTS customers (
+      CREATE TABLE IF NOT EXISTS customer (
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         document varchar(14) NOT NULL UNIQUE,
         name varchar(255) NOT NULL,
@@ -21,7 +21,7 @@ export class InitialSchema1710000000000 implements MigrationInterface {
         "createdAt" timestamptz NOT NULL DEFAULT now(),
         "updatedAt" timestamptz NOT NULL DEFAULT now()
       );
-      CREATE TABLE IF NOT EXISTS vehicles (
+      CREATE TABLE IF NOT EXISTS vehicle (
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         "licensePlate" varchar(7) NOT NULL UNIQUE,
         make varchar(120) NOT NULL,
@@ -29,7 +29,7 @@ export class InitialSchema1710000000000 implements MigrationInterface {
         year smallint NOT NULL,
         "createdAt" timestamptz NOT NULL DEFAULT now()
       );
-      CREATE TABLE IF NOT EXISTS service_offerings (
+      CREATE TABLE IF NOT EXISTS service (
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         name varchar(255) NOT NULL,
         description varchar(255),
@@ -38,7 +38,7 @@ export class InitialSchema1710000000000 implements MigrationInterface {
         "createdAt" timestamptz NOT NULL DEFAULT now(),
         "updatedAt" timestamptz NOT NULL DEFAULT now()
       );
-      CREATE TABLE IF NOT EXISTS parts (
+      CREATE TABLE IF NOT EXISTS part (
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         name varchar(255) NOT NULL UNIQUE,
         "priceInCents" integer NOT NULL CHECK ("priceInCents" >= 0),
@@ -47,11 +47,11 @@ export class InitialSchema1710000000000 implements MigrationInterface {
         "createdAt" timestamptz NOT NULL DEFAULT now(),
         "updatedAt" timestamptz NOT NULL DEFAULT now()
       );
-      CREATE TABLE IF NOT EXISTS work_orders (
+      CREATE TABLE IF NOT EXISTS work_order (
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         code varchar(30) NOT NULL UNIQUE,
-        "customerId" uuid NOT NULL REFERENCES customers(id) ON DELETE RESTRICT,
-        "vehicleId" uuid NOT NULL REFERENCES vehicles(id) ON DELETE RESTRICT,
+        "customerId" uuid NOT NULL REFERENCES customer(id) ON DELETE RESTRICT,
+        "vehicleId" uuid NOT NULL REFERENCES vehicle(id) ON DELETE RESTRICT,
         status varchar(30) NOT NULL,
         "budgetStatus" varchar(20) NOT NULL,
         "totalInCents" integer NOT NULL DEFAULT 0 CHECK ("totalInCents" >= 0),
@@ -59,18 +59,18 @@ export class InitialSchema1710000000000 implements MigrationInterface {
         "executionFinishedAt" timestamptz,
         "createdAt" timestamptz NOT NULL DEFAULT now()
       );
-      CREATE TABLE IF NOT EXISTS work_order_items (
+      CREATE TABLE IF NOT EXISTS work_order_item (
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-        "workOrderId" uuid NOT NULL REFERENCES work_orders(id) ON DELETE CASCADE,
+        "workOrderId" uuid NOT NULL REFERENCES work_order(id) ON DELETE CASCADE,
         kind varchar(10) NOT NULL,
         "referenceId" uuid NOT NULL,
         description varchar(255) NOT NULL,
         "unitPriceInCents" integer NOT NULL CHECK ("unitPriceInCents" >= 0),
         quantity integer NOT NULL CHECK (quantity > 0)
       );
-      CREATE TABLE IF NOT EXISTS stock_movements (
+      CREATE TABLE IF NOT EXISTS stock_movement (
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-        "partId" uuid NOT NULL REFERENCES parts(id),
+        "partId" uuid NOT NULL REFERENCES part(id),
         quantity integer NOT NULL CHECK (quantity > 0),
         type varchar(20) NOT NULL,
         reason varchar(255),
@@ -81,6 +81,6 @@ export class InitialSchema1710000000000 implements MigrationInterface {
   }
 
   async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query('DROP TABLE IF EXISTS stock_movements, work_order_items, work_orders, parts, service_offerings, vehicles, customers, admin_users');
+    await queryRunner.query('DROP TABLE IF EXISTS stock_movement, work_order_item, work_order, part, service, vehicle, customer, admin_user');
   }
 }

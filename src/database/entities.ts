@@ -5,17 +5,20 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
-  UpdateDateColumn,
-  Unique,
 } from 'typeorm';
+import { CatalogItemKind, StockMovementType } from '../shared/enums/catalog.enums';
+import { BudgetStatus, WorkOrderStatus } from '../modules/work-order/entity/work-order-status';
+import { Customer } from '../modules/customer/entity/customer.entity';
+import { Vehicle } from '../modules/customer/entity/vehicle.entity';
+import { Part } from '../modules/inventory/entity/part.entity';
+import { Service } from '../modules/service/entity/service.entity';
 
-@Entity('admin_users')
-@Unique(['email'])
+@Entity('admin_user')
 export class AdminUserEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column()
+  @Column({ unique: true })
   email!: string;
 
   @Column()
@@ -25,130 +28,33 @@ export class AdminUserEntity {
   createdAt!: Date;
 }
 
-@Entity('customers')
-@Unique(['document'])
-export class CustomerEntity {
-  @PrimaryGeneratedColumn('uuid')
-  id!: string;
-
-  @Column({ length: 14 })
-  document!: string;
-
-  @Column()
-  name!: string;
-
-  @Column()
-  email!: string;
-
-  @Column()
-  phone!: string;
-
-  @CreateDateColumn()
-  createdAt!: Date;
-
-  @UpdateDateColumn()
-  updatedAt!: Date;
-}
-
-@Entity('vehicles')
-@Unique(['licensePlate'])
-export class VehicleEntity {
-  @PrimaryGeneratedColumn('uuid')
-  id!: string;
-
-  @Column({ length: 7 })
-  licensePlate!: string;
-
-  @Column()
-  make!: string;
-
-  @Column()
-  model!: string;
-
-  @Column({ type: 'smallint' })
-  year!: number;
-
-  @CreateDateColumn()
-  createdAt!: Date;
-}
-
-@Entity('service_offerings')
-export class ServiceOfferingEntity {
-  @PrimaryGeneratedColumn('uuid')
-  id!: string;
-
-  @Column()
-  name!: string;
-
-  @Column({ nullable: true })
-  description!: string | null;
-
-  @Column({ type: 'integer' })
-  priceInCents!: number;
-
-  @Column({ default: true })
-  active!: boolean;
-
-  @CreateDateColumn()
-  createdAt!: Date;
-
-  @UpdateDateColumn()
-  updatedAt!: Date;
-}
-
-@Entity('parts')
-@Unique(['name'])
-export class PartEntity {
-  @PrimaryGeneratedColumn('uuid')
-  id!: string;
-
-  @Column()
-  name!: string;
-
-  @Column({ type: 'integer' })
-  priceInCents!: number;
-
-  @Column({ type: 'integer', default: 0 })
-  stockQuantity!: number;
-
-  @Column({ type: 'integer', default: 0 })
-  minimumStock!: number;
-
-  @CreateDateColumn()
-  createdAt!: Date;
-
-  @UpdateDateColumn()
-  updatedAt!: Date;
-}
-
-@Entity('work_orders')
-@Unique(['code'])
+@Entity('work_order')
 export class WorkOrderEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column({ length: 30 })
+  @Column({ length: 30, unique: true })
   code!: string;
 
-  @ManyToOne(() => CustomerEntity, { nullable: false, onDelete: 'RESTRICT' })
+  @ManyToOne(() => Customer, { nullable: false, onDelete: 'RESTRICT' })
   @JoinColumn({ name: 'customerId' })
-  customer!: CustomerEntity;
+  customer!: Customer;
 
   @Column({ type: 'uuid' })
   customerId!: string;
 
-  @ManyToOne(() => VehicleEntity, { nullable: false, onDelete: 'RESTRICT' })
+  @ManyToOne(() => Vehicle, { nullable: false, onDelete: 'RESTRICT' })
   @JoinColumn({ name: 'vehicleId' })
-  vehicle!: VehicleEntity;
+  vehicle!: Vehicle;
 
   @Column({ type: 'uuid' })
   vehicleId!: string;
 
-  @Column({ length: 30 })
-  status!: string;
+  @Column({ type: 'varchar', enum: WorkOrderStatus })
+  status!: WorkOrderStatus;
 
-  @Column({ length: 20 })
-  budgetStatus!: string;
+  @Column({ type: 'varchar', enum: BudgetStatus })
+  budgetStatus!: BudgetStatus;
 
   @Column({ type: 'integer', default: 0 })
   totalInCents!: number;
@@ -163,7 +69,7 @@ export class WorkOrderEntity {
   createdAt!: Date;
 }
 
-@Entity('work_order_items')
+@Entity('work_order_item')
 export class WorkOrderItemEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
@@ -172,13 +78,13 @@ export class WorkOrderItemEntity {
   @JoinColumn({ name: 'workOrderId' })
   workOrder!: WorkOrderEntity;
 
-  @Column()
+  @Column({ type: 'uuid' })
   workOrderId!: string;
 
-  @Column({ length: 10 })
-  kind!: 'SERVICE' | 'PART';
+  @Column({ type: 'varchar', enum: CatalogItemKind })
+  kind!: CatalogItemKind;
 
-  @Column()
+  @Column({ type: 'uuid' })
   referenceId!: string;
 
   @Column()
@@ -191,26 +97,41 @@ export class WorkOrderItemEntity {
   quantity!: number;
 }
 
-@Entity('stock_movements')
+@Entity('stock_movement')
 export class StockMovementEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column()
+  @ManyToOne(() => Part, { nullable: false, onDelete: 'RESTRICT' })
+  @JoinColumn({ name: 'partId' })
+  part!: Part;
+
+  @Column({ type: 'uuid' })
   partId!: string;
 
   @Column({ type: 'integer' })
   quantity!: number;
 
-  @Column({ length: 20 })
-  type!: 'ENTRY' | 'ADJUSTMENT' | 'EXIT';
+  @Column({ type: 'varchar', enum: StockMovementType })
+  type!: StockMovementType;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   reason!: string | null;
 
-  @Column({ nullable: true })
+  @Column({ type: 'uuid', nullable: true })
   workOrderId!: string | null;
 
   @CreateDateColumn()
   createdAt!: Date;
 }
+
+export {
+  Customer,
+  Vehicle,
+  Part,
+  Service,
+  Customer as CustomerEntity,
+  Vehicle as VehicleEntity,
+  Part as PartEntity,
+  Service as ServiceEntity,
+};

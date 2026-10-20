@@ -1,10 +1,10 @@
-import { DomainError } from '../domain-error';
-import { Document } from './document';
-import { LicensePlate } from './license-plate';
-import { Money } from './money';
-import { Quantity } from './quantity';
-import { VehicleYear } from './vehicle-year';
-import { WorkOrderCode } from './work-order-code';
+import { DomainError } from '../../src/shared/domain/domain-error';
+import { Document } from '../../src/shared/domain/value-objects/document';
+import { LicensePlate } from '../../src/shared/domain/value-objects/license-plate';
+import { Money } from '../../src/shared/domain/value-objects/money';
+import { Quantity } from '../../src/shared/domain/value-objects/quantity';
+import { VehicleYear } from '../../src/shared/domain/value-objects/vehicle-year';
+import { WorkOrderCode } from '../../src/shared/domain/value-objects/work-order-code';
 
 describe('shared value objects', () => {
   it('accepts valid CPF and CNPJ documents', () => {

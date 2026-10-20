@@ -5,34 +5,30 @@ import {
   AdminUserEntity,
   CustomerEntity,
   PartEntity,
-  ServiceOfferingEntity,
+  ServiceEntity,
   StockMovementEntity,
   VehicleEntity,
   WorkOrderEntity,
   WorkOrderItemEntity,
 } from './entities';
 
-const databaseImports = process.env.NODE_ENV === 'test'
-  ? []
-  : [
-      TypeOrmModule.forRoot({
-        ...AppDataSource.options,
-        autoLoadEntities: true,
-      }),
-      TypeOrmModule.forFeature([
-        AdminUserEntity,
-        CustomerEntity,
-        VehicleEntity,
-        ServiceOfferingEntity,
-        PartEntity,
-        WorkOrderEntity,
-        WorkOrderItemEntity,
-        StockMovementEntity,
-      ]),
-    ];
-
 @Module({
-  imports: databaseImports,
-  exports: process.env.NODE_ENV === 'test' ? [] : [TypeOrmModule],
+  imports: [
+    TypeOrmModule.forRoot({
+      ...AppDataSource.options,
+      autoLoadEntities: true,
+    }),
+    TypeOrmModule.forFeature([
+      AdminUserEntity,
+      CustomerEntity,
+      VehicleEntity,
+      ServiceEntity,
+      PartEntity,
+      WorkOrderEntity,
+      WorkOrderItemEntity,
+      StockMovementEntity,
+    ]),
+  ],
+  exports: [TypeOrmModule],
 })
 export class DatabaseModule {}
