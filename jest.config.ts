@@ -2,8 +2,6 @@ import type { Config } from 'jest';
 import { pathsToModuleNameMapper } from 'ts-jest';
 import ts from 'typescript';
 
-// Path aliases (e.g. the ones added by `nest g library`) live in tsconfig.json,
-// so they are read from there instead of being duplicated here.
 const { config: tsconfig } = ts.readConfigFile(
   './tsconfig.json',
   ts.sys.readFile,
@@ -34,6 +32,11 @@ const config: Config = {
   ],
   coverageDirectory: './coverage',
   testEnvironment: 'node',
+  setupFiles: ['<rootDir>/test/set-env.ts'],
+  coverageThreshold: {
+    global: { branches: 0, functions: 0, lines: 0, statements: 0 },
+    './src/core/domain/**/*.ts': { lines: 80, statements: 80 },
+  },
 };
 
 export default config;
