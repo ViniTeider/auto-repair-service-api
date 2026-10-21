@@ -11,14 +11,22 @@ export class VehicleRepository {
   ) {}
 
   findAll(): Promise<VehicleEntity[]> {
-    return this.repository.find();
+    return this.repository.find({ order: { createdAt: 'DESC' } });
   }
 
   findById(id: string): Promise<VehicleEntity | null> {
     return this.repository.findOneBy({ id });
   }
 
-  save(vehicle: VehicleEntity): Promise<VehicleEntity> {
-    return this.repository.save(vehicle);
+  findByLicensePlate(licensePlate: string): Promise<VehicleEntity | null> {
+    return this.repository.findOneBy({ licensePlate });
+  }
+
+  save(entity: VehicleEntity): Promise<VehicleEntity> {
+    return this.repository.save(entity);
+  }
+
+  async remove(entity: VehicleEntity): Promise<void> {
+    await this.repository.remove(entity);
   }
 }

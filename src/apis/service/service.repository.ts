@@ -11,14 +11,22 @@ export class ServiceRepository {
   ) {}
 
   findAll(): Promise<ServiceEntity[]> {
-    return this.repository.find();
+    return this.repository.find({ order: { createdAt: 'DESC' } });
   }
 
   findById(id: string): Promise<ServiceEntity | null> {
     return this.repository.findOneBy({ id });
   }
 
-  save(service: ServiceEntity): Promise<ServiceEntity> {
-    return this.repository.save(service);
+  findByName(name: string): Promise<ServiceEntity | null> {
+    return this.repository.findOneBy({ name });
+  }
+
+  save(entity: ServiceEntity): Promise<ServiceEntity> {
+    return this.repository.save(entity);
+  }
+
+  async remove(entity: ServiceEntity): Promise<void> {
+    await this.repository.remove(entity);
   }
 }

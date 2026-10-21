@@ -1,0 +1,144 @@
+import { Test, TestingModule } from '@nestjs/testing';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
+import request from 'supertest';
+import { App } from 'supertest/types';
+import { AppModule } from '../src/app/app.module';
+
+describe('Persisted CRUD (e2e)', () => {
+  let app: INestApplication<App>;
+  let token: string;
+  const suffix = Date.now().toString().slice(-6);
+
+  const auth = () => ({ Authorization: `Bearer ${token}` });
+
+  beforeAll(async () => {
+    const moduleFixture: TestingModule = await Test.createTestingModule({
+      imports: [AppModule],
+    }).compile();
+
+    app = moduleFixture.createNestApplication();
+    app.useGlobalPipes(
+      new ValidationPipe({ whitelist: true, transform: true }),
+    );
+    await app.init();
+
+    const login = await request(app.getHttpServer()).post('/auth/login').send({
+      email: 'admin@repair-shop.com',
+      password: 'AdminSecurePassword123!',
+    });
+    token = login.body.accessToken;
+  });
+
+  it.each(['customers', 'vehicles', 'parts', 'services'])(
+    'requires authentication on /%s',
+    (route) => {
+      return request(app.getHttpServer()).get(`/${route}`).expect(401);
+    },
+  );
+
+  it('runs the vehicle crud and rejects duplicated plates', async () => {
+    const http = app.getHttpServer();
+    const plate = `ZZZ${suffix.slice(0, 4)}`;
+    const created = await request(http)
+      .post('/vehicles')
+      .set(auth())
+      .send({ licensePlate: plate, make: 'Ford', model: 'Ka', year: 2020 })
+      .expect(201);
+    await request(http)
+      .post('/vehicles')
+      .set(auth())
+      .send({ licensePlate: plate, make: 'Ford', model: 'Ka', year: 2020 })
+      .expect(409);
+    await request(http)
+      .get(`/vehicles/${created.body.id}`)
+      .set(auth())
+      .expect(200);
+    const updated = await request(http)
+      .patch(`/vehicles/${created.body.id}`)
+      .set(auth())
+      .send({ model: 'Fiesta' })
+      .expect(200);
+    expect(updated.body.model).toBe('Fiesta');
+    await request(http)
+      .delete(`/vehicles/${created.body.id}`)
+      .set(auth())
+      .expect(204);
+    await request(http)
+      .get(`/vehicles/${created.body.id}`)
+      .set(auth())
+      .expect(404);
+  });
+
+  it('runs the part crud storing cents and replenishing stock', async () => {
+    const http = app.getHttpServer();
+    const created = await request(http)
+      .post('/parts')
+      .set(auth())
+      .send({ name: `Filter ${suffix}`, price: 20, stock: 1 })
+      .expect(201);
+    expect(created.body.price).toBe(20);
+    const stocked = await request(http)
+      .post(`/parts/${created.body.id}/stock`)
+      .set(auth())
+      .send({ quantity: 4 })
+      .expect(201);
+    expect(stocked.body.stock).toBe(5);
+    await request(http)
+      .patch(`/parts/${created.body.id}`)
+      .set(auth())
+      .send({ price: 30 })
+      .expect(200);
+    const fetched = await request(http)
+      .get(`/parts/${created.body.id}`)
+      .set(auth())
+      .expect(200);
+    expect(fetched.body.price).toBe(30);
+    await request(http)
+      .delete(`/parts/${created.body.id}`)
+      .set(auth())
+      .expect(204);
+  });
+
+  it('runs the service and customer crud', async () => {
+    const http = app.getHttpServer();
+    const service = await request(http)
+      .post('/services')
+      .set(auth())
+      .send({ name: `Oil change ${suffix}`, price: 100 })
+      .expect(201);
+    await request(http)
+      .patch(`/services/${service.body.id}`)
+      .set(auth())
+      .send({ active: false })
+      .expect(200);
+    await request(http)
+      .delete(`/services/${service.body.id}`)
+      .set(auth())
+      .expect(204);
+
+    const customer = await request(http)
+      .post('/customers')
+      .set(auth())
+      .send({
+        document: '529.982.247-25',
+        name: 'Maria',
+        email: 'maria@example.com',
+        phone: '11999999999',
+      })
+      .expect(201);
+    expect(customer.body.document).toBe('52998224725');
+    await request(http)
+      .patch(`/customers/${customer.body.id}`)
+      .set(auth())
+      .send({ name: 'Maria Silva' })
+      .expect(200);
+    await request(http)
+      .delete(`/customers/${customer.body.id}`)
+      .set(auth())
+      .expect(204);
+  });
+
+  afterAll(async () => {
+    await app.close();
+  });
+});
