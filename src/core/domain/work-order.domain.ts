@@ -8,11 +8,6 @@ import { CatalogItemKindEnum } from '../enums/catalog-item-kind.enum';
 import { BudgetStatusEnum } from '../enums/work-order/budget-status.enum';
 import { WorkOrderStatusEnum } from '../enums/work-order/work-order-status.enum';
 
-export type WorkOrderHistoryEntry = {
-  status: WorkOrderStatusEnum;
-  at: Date;
-};
-
 export type WorkOrderItem = {
   kind: CatalogItemKindEnum;
   referenceId: string;
@@ -51,6 +46,34 @@ export class WorkOrder {
       BudgetStatusEnum.PENDING,
       Money.fromCents(0),
       new Date(),
+    );
+  }
+
+  static restore(params: {
+    id: string;
+    code: string;
+    customerDocument: Document;
+    vehiclePlate: LicensePlate;
+    items: WorkOrderItem[];
+    status: WorkOrderStatusEnum;
+    budgetStatus: BudgetStatusEnum;
+    total: Money;
+    createdAt: Date;
+    executionStartedAt?: Date;
+    executionFinishedAt?: Date;
+  }): WorkOrder {
+    return new WorkOrder(
+      params.id,
+      WorkOrderCode.create(params.code),
+      params.customerDocument,
+      params.vehiclePlate,
+      [...params.items],
+      params.status,
+      params.budgetStatus,
+      params.total,
+      params.createdAt,
+      params.executionStartedAt,
+      params.executionFinishedAt,
     );
   }
 
@@ -194,7 +217,3 @@ export class WorkOrder {
     this.statusValue = target;
   }
 }
-
-export type StoredWorkOrder = WorkOrder & {
-  history: WorkOrderHistoryEntry[];
-};

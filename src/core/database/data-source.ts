@@ -6,6 +6,7 @@ import { PartEntity } from '../entities/part.entity';
 import { ServiceEntity } from '../entities/service.entity';
 import { StockMovementEntity } from '../entities/stock-movement.entity';
 import { VehicleEntity } from '../entities/vehicle.entity';
+import { WorkOrderHistoryEntity } from '../entities/work-order-history.entity';
 import { WorkOrderEntity } from '../entities/work-order.entity';
 import { WorkOrderItemEntity } from '../entities/work-order-item.entity';
 
@@ -24,6 +25,7 @@ export const AppDataSource = new DataSource({
     PartEntity,
     WorkOrderEntity,
     WorkOrderItemEntity,
+    WorkOrderHistoryEntity,
     StockMovementEntity,
   ],
   migrations: ['dist/core/database/migrations/*.js'],

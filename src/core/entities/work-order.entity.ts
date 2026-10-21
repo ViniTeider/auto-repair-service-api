@@ -4,12 +4,15 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { BudgetStatusEnum } from '../enums/work-order/budget-status.enum';
 import { WorkOrderStatusEnum } from '../enums/work-order/work-order-status.enum';
 import { CustomerEntity } from './customer.entity';
 import { VehicleEntity } from './vehicle.entity';
+import { WorkOrderHistoryEntity } from './work-order-history.entity';
+import { WorkOrderItemEntity } from './work-order-item.entity';
 
 @Entity('work_order')
 export class WorkOrderEntity {
@@ -47,6 +50,16 @@ export class WorkOrderEntity {
 
   @Column({ type: 'timestamptz', nullable: true })
   executionFinishedAt!: Date | null;
+
+  @OneToMany(() => WorkOrderItemEntity, (item) => item.workOrder, {
+    cascade: ['insert'],
+  })
+  items!: WorkOrderItemEntity[];
+
+  @OneToMany(() => WorkOrderHistoryEntity, (entry) => entry.workOrder, {
+    cascade: ['insert'],
+  })
+  history!: WorkOrderHistoryEntity[];
 
   @CreateDateColumn()
   createdAt!: Date;

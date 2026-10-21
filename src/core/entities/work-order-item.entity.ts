@@ -4,6 +4,7 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
+  type Relation,
 } from 'typeorm';
 import { CatalogItemKindEnum } from '../enums/catalog-item-kind.enum';
 import { WorkOrderEntity } from './work-order.entity';
@@ -13,9 +14,11 @@ export class WorkOrderItemEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @ManyToOne(() => WorkOrderEntity, { onDelete: 'CASCADE' })
+  @ManyToOne(() => WorkOrderEntity, (workOrder) => workOrder.items, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'workOrderId' })
-  workOrder!: WorkOrderEntity;
+  workOrder!: Relation<WorkOrderEntity>;
 
   @Column({ type: 'uuid' })
   workOrderId!: string;

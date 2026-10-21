@@ -1,8 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from '../src/app/app.module';
+import { randomCpf, randomPlate } from './helpers/random-document';
 
 describe('API (e2e)', () => {
   let app: INestApplication<App>;
@@ -13,170 +14,224 @@ describe('API (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
+    app.useGlobalPipes(
+      new ValidationPipe({ whitelist: true, transform: true }),
+    );
     await app.init();
   });
 
-  it('rejects unauthenticated administrative requests', () => {
-    return request(app.getHttpServer()).get('/admin/customers').expect(401);
+  it.each([
+    'customers',
+    'work-orders',
+    'work-orders/metrics/average-execution-time',
+  ])('rejects unauthenticated requests to /%s', (route) => {
+    return request(app.getHttpServer()).get(`/${route}`).expect(401);
   });
 
-  it('executes the complete repair-order application flow', async () => {
-    const loginResponse = await request(app.getHttpServer())
+  it('executes the complete repair-order flow', async () => {
+    const http = app.getHttpServer();
+    const login = await request(http)
       .post('/auth/login')
       .send({
         email: 'admin@repair-shop.com',
         password: 'AdminSecurePassword123!',
       })
       .expect(201);
+    const auth = {
+      Authorization: `Bearer ${login.body.accessToken as string}`,
+    };
+    const suffix = Date.now().toString(36);
 
-    const token = loginResponse.body.accessToken as string;
-    const admin = { Authorization: `Bearer ${token}` };
-
-    const customerResponse = await request(app.getHttpServer())
-      .post('/admin/customers')
-      .set(admin)
+    const customer = await request(http)
+      .post('/customers')
+      .set(auth)
       .send({
-        document: '529.982.247-25',
+        document: randomCpf(),
         name: 'Maria Silva',
         email: 'maria@example.com',
         phone: '11999999999',
       })
       .expect(201);
-
-    const vehicleResponse = await request(app.getHttpServer())
-      .post('/admin/vehicles')
-      .set(admin)
+    const vehicle = await request(http)
+      .post('/vehicles')
+      .set(auth)
       .send({
-        licensePlate: 'ABC-1234',
+        licensePlate: randomPlate(),
         make: 'Ford',
         model: 'Ka',
         year: 2020,
       })
       .expect(201);
-
-    const serviceResponse = await request(app.getHttpServer())
-      .post('/admin/services')
-      .set(admin)
+    const service = await request(http)
+      .post('/services')
+      .set(auth)
       .send({
-        name: 'Oil change',
+        name: `Oil change ${suffix}`,
         description: 'Engine oil replacement',
         price: 100,
       })
       .expect(201);
-
-    const partResponse = await request(app.getHttpServer())
-      .post('/admin/parts')
-      .set(admin)
+    const part = await request(http)
+      .post('/parts')
+      .set(auth)
       .send({
-        name: 'Oil filter',
+        name: `Oil filter ${suffix}`,
         price: 20,
         minimumStock: 1,
         stock: 2,
       })
       .expect(201);
 
-    const workOrderResponse = await request(app.getHttpServer())
-      .post('/admin/work-orders')
-      .set(admin)
+    const opened = await request(http)
+      .post('/work-orders')
+      .set(auth)
       .send({
-        customerDocument: customerResponse.body.document,
-        vehiclePlate: vehicleResponse.body.licensePlate,
+        customerDocument: customer.body.document,
+        vehiclePlate: vehicle.body.licensePlate,
       })
       .expect(201);
+    const code = opened.body.code as string;
+    expect(opened.body.status).toBe('RECEBIDA');
 
-    const workOrderCode = workOrderResponse.body.code as string;
-
-    await request(app.getHttpServer())
-      .post(`/admin/work-orders/${workOrderCode}/items`)
-      .set(admin)
-      .send({
-        kind: 'SERVICE',
-        referenceId: serviceResponse.body.id,
-        quantity: 1,
-      })
+    await request(http)
+      .post(`/work-orders/${code}/items`)
+      .set(auth)
+      .send({ kind: 'SERVICE', referenceId: service.body.id, quantity: 1 })
       .expect(201);
-
-    await request(app.getHttpServer())
-      .post(`/admin/work-orders/${workOrderCode}/items`)
-      .set(admin)
-      .send({
-        kind: 'PART',
-        referenceId: partResponse.body.id,
-        quantity: 1,
-      })
+    const withItems = await request(http)
+      .post(`/work-orders/${code}/items`)
+      .set(auth)
+      .send({ kind: 'PART', referenceId: part.body.id, quantity: 1 })
       .expect(201);
+    expect(withItems.body.total).toBe(120);
+    expect(withItems.body.items).toHaveLength(2);
 
-    await request(app.getHttpServer())
-      .post(`/admin/work-orders/${workOrderCode}/diagnosis`)
-      .set(admin)
+    await request(http)
+      .post(`/work-orders/${code}/unknown`)
+      .set(auth)
+      .expect(400);
+    await request(http)
+      .post(`/work-orders/${code}/diagnosis`)
+      .set(auth)
       .expect(201);
-
-    await request(app.getHttpServer())
-      .post(`/admin/work-orders/${workOrderCode}/finish-diagnosis`)
-      .set(admin)
+    await request(http)
+      .post(`/work-orders/${code}/finish-diagnosis`)
+      .set(auth)
       .expect(201);
-
-    const approvedOrderResponse = await request(app.getHttpServer())
-      .post(`/admin/work-orders/${workOrderCode}/approve`)
-      .set(admin)
+    const approved = await request(http)
+      .post(`/work-orders/${code}/approve`)
+      .set(auth)
       .expect(201);
+    expect(approved.body.status).toBe('EM_EXECUCAO');
 
-    expect(approvedOrderResponse.body.status).toBe('EM_EXECUCAO');
-
-    const inventoryResponse = await request(app.getHttpServer())
-      .get('/admin/parts')
-      .set(admin)
+    const stocked = await request(http)
+      .get(`/parts/${part.body.id}`)
+      .set(auth)
       .expect(200);
+    expect(stocked.body.stock).toBe(1);
 
-    expect(inventoryResponse.body).toEqual([
-      expect.objectContaining({
-        id: partResponse.body.id,
-        stock: 1,
-      }),
-    ]);
-
-    await request(app.getHttpServer())
-      .post(`/admin/work-orders/${workOrderCode}/finish`)
-      .set(admin)
+    await request(http)
+      .post(`/work-orders/${code}/finish`)
+      .set(auth)
       .expect(201);
-
-    const deliveredOrderResponse = await request(app.getHttpServer())
-      .post(`/admin/work-orders/${workOrderCode}/deliver`)
-      .set(admin)
+    const delivered = await request(http)
+      .post(`/work-orders/${code}/deliver`)
+      .set(auth)
       .expect(201);
+    expect(delivered.body.status).toBe('ENTREGUE');
 
-    expect(deliveredOrderResponse.body.status).toBe('ENTREGUE');
-
-    const publicProgressResponse = await request(app.getHttpServer())
-      .get(`/public/work-orders/${workOrderCode}`)
-      .query({ document: customerResponse.body.document })
+    const progress = await request(http)
+      .get(`/public/work-orders/${code}`)
+      .query({ document: customer.body.document })
       .expect(200);
-
-    expect(publicProgressResponse.body).toEqual(
-      expect.objectContaining({
-        code: workOrderCode,
-        status: 'ENTREGUE',
-      }),
+    expect(progress.body).toEqual(
+      expect.objectContaining({ code, status: 'ENTREGUE' }),
     );
+    expect(
+      progress.body.history.map((entry: { status: string }) => entry.status),
+    ).toEqual([
+      'RECEBIDA',
+      'EM_DIAGNOSTICO',
+      'AGUARDANDO_APROVACAO',
+      'EM_EXECUCAO',
+      'FINALIZADA',
+      'ENTREGUE',
+    ]);
+    await request(http)
+      .get(`/public/work-orders/${code}`)
+      .query({ document: randomCpf() })
+      .expect(404);
 
-    await request(app.getHttpServer())
-      .get('/admin/customers')
-      .set(admin)
-      .expect(200)
-      .expect((response) => {
-        expect(response.body).toEqual([
-          expect.objectContaining({ id: customerResponse.body.id }),
-        ]);
-      });
+    const metrics = await request(http)
+      .get('/work-orders/metrics/average-execution-time')
+      .set(auth)
+      .expect(200);
+    expect(metrics.body.count).toBeGreaterThanOrEqual(1);
+    expect(metrics.body.minutes).toBeGreaterThanOrEqual(0);
 
-    await request(app.getHttpServer())
-      .get('/admin/metrics/average-execution-time')
-      .set(admin)
-      .expect(200)
-      .expect((response) => {
-        expect(response.body.count).toBe(1);
-        expect(response.body.minutes).toBeGreaterThanOrEqual(0);
-      });
+    // the customer is now referenced by a work order and cannot be deleted
+    await request(http)
+      .delete(`/customers/${customer.body.id}`)
+      .set(auth)
+      .expect(409);
+  });
+
+  it('refuses to approve a budget without enough stock', async () => {
+    const http = app.getHttpServer();
+    const login = await request(http).post('/auth/login').send({
+      email: 'admin@repair-shop.com',
+      password: 'AdminSecurePassword123!',
+    });
+    const auth = {
+      Authorization: `Bearer ${login.body.accessToken as string}`,
+    };
+    const suffix = Date.now().toString(36);
+
+    const customer = await request(http).post('/customers').set(auth).send({
+      document: randomCpf(),
+      name: 'João',
+      email: 'joao@example.com',
+      phone: '11988888888',
+    });
+    const vehicle = await request(http).post('/vehicles').set(auth).send({
+      licensePlate: randomPlate(),
+      make: 'Fiat',
+      model: 'Uno',
+      year: 2019,
+    });
+    const part = await request(http)
+      .post('/parts')
+      .set(auth)
+      .send({ name: `Brake pad ${suffix}`, price: 50, stock: 0 });
+    const order = await request(http).post('/work-orders').set(auth).send({
+      customerDocument: customer.body.document,
+      vehiclePlate: vehicle.body.licensePlate,
+    });
+    const code = order.body.code as string;
+
+    await request(http)
+      .post(`/work-orders/${code}/items`)
+      .set(auth)
+      .send({ kind: 'PART', referenceId: part.body.id, quantity: 1 })
+      .expect(201);
+    await request(http)
+      .post(`/work-orders/${code}/diagnosis`)
+      .set(auth)
+      .expect(201);
+    await request(http)
+      .post(`/work-orders/${code}/finish-diagnosis`)
+      .set(auth)
+      .expect(201);
+    await request(http)
+      .post(`/work-orders/${code}/approve`)
+      .set(auth)
+      .expect(400);
+
+    const unchanged = await request(http)
+      .get(`/work-orders/${code}`)
+      .set(auth)
+      .expect(200);
+    expect(unchanged.body.status).toBe('AGUARDANDO_APROVACAO');
   });
 
   afterAll(async () => {

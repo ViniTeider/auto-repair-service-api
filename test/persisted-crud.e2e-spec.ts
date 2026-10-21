@@ -3,6 +3,7 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { AppModule } from '../src/app/app.module';
+import { randomCpf, randomPlate } from './helpers/random-document';
 
 describe('Persisted CRUD (e2e)', () => {
   let app: INestApplication<App>;
@@ -38,7 +39,7 @@ describe('Persisted CRUD (e2e)', () => {
 
   it('runs the vehicle crud and rejects duplicated plates', async () => {
     const http = app.getHttpServer();
-    const plate = `ZZZ${suffix.slice(0, 4)}`;
+    const plate = randomPlate();
     const created = await request(http)
       .post('/vehicles')
       .set(auth())
@@ -120,13 +121,13 @@ describe('Persisted CRUD (e2e)', () => {
       .post('/customers')
       .set(auth())
       .send({
-        document: '529.982.247-25',
+        document: randomCpf(),
         name: 'Maria',
         email: 'maria@example.com',
         phone: '11999999999',
       })
       .expect(201);
-    expect(customer.body.document).toBe('52998224725');
+    expect(customer.body.document).toMatch(/^\d{11}$/);
     await request(http)
       .patch(`/customers/${customer.body.id}`)
       .set(auth())
