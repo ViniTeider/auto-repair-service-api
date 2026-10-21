@@ -28,6 +28,21 @@ describe('API (e2e)', () => {
     return request(app.getHttpServer()).get(`/${route}`).expect(401);
   });
 
+  it('issues a token that expires after JWT_EXPIRATION', async () => {
+    const login = await request(app.getHttpServer())
+      .post('/auth/login')
+      .send({ email: 'admin@test.local', password: 'test-admin-password' })
+      .expect(201);
+    const payload = JSON.parse(
+      Buffer.from(
+        (login.body.accessToken as string).split('.')[1],
+        'base64url',
+      ).toString(),
+    ) as { exp: number; iat: number };
+    const expected = process.env.JWT_EXPIRATION;
+    expect(payload.exp - payload.iat).toBe(Number(expected));
+  });
+
   it('executes the complete repair-order flow', async () => {
     const http = app.getHttpServer();
     const login = await request(http)

@@ -125,8 +125,9 @@ em `POST /auth/login` e use o token no botão **Authorize**.
 
 `POST /auth/login` com o e-mail e a senha configurados em `ADMIN_DEFAULT_EMAIL` e
 `ADMIN_DEFAULT_PASSWORD` devolve um JWT (`accessToken`). O `.env.example` traz valores de
-demonstração para essas variáveis; troque-os em qualquer ambiente real. Envie o token no cabeçalho
-`Authorization: Bearer <token>`.
+demonstração para essas variáveis; troque-os em qualquer ambiente real. O token expira após o tempo
+de `JWT_EXPIRATION` (por exemplo `1d` ou `2h`; um número puro vale segundos; padrão `1d`). Envie o
+token no cabeçalho `Authorization: Bearer <token>`.
 
 ## API
 
