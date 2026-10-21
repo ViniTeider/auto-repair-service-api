@@ -1,7 +1,7 @@
 import { JwtService } from '@nestjs/jwt';
 import { AuthService } from '../../src/apis/auth/auth.service';
 import { CustomerApplicationService } from '../../src/apis/customer/services/customer-application.service';
-import { InventoryApplicationService } from '../../src/apis/inventory/services/inventory-application.service';
+import { PartApplicationService } from '../../src/apis/part/services/part-application.service';
 import { ServiceApplicationService } from '../../src/apis/service/services/service-application.service';
 import { WorkOrderApplicationService } from '../../src/apis/work-order/services/work-order-application.service';
 import { WorkOrderActionEnum } from '../../src/core/enums/work-order/work-order-action.enum';
@@ -11,14 +11,14 @@ describe('Application services', () => {
   const createServices = () => {
     const auth = new AuthService(new JwtService({ secret: 'test-secret' }));
     const customers = new CustomerApplicationService();
-    const inventory = new InventoryApplicationService();
+    const parts = new PartApplicationService();
     const services = new ServiceApplicationService();
     const workOrders = new WorkOrderApplicationService(
       customers,
-      inventory,
+      parts,
       services,
     );
-    return { auth, customers, inventory, services, workOrders };
+    return { auth, customers, parts, services, workOrders };
   };
 
   it('authenticates the configured admin and rejects invalid credentials', async () => {
@@ -55,7 +55,7 @@ describe('Application services', () => {
   });
 
   it('requires and consumes stock when approving a budget', () => {
-    const { customers, inventory, workOrders } = createServices();
+    const { customers, parts, workOrders } = createServices();
     customers.createCustomer({
       document: '529.982.247-25',
       name: 'Maria',
@@ -68,7 +68,7 @@ describe('Application services', () => {
       model: 'Ka',
       year: 2020,
     });
-    const part = inventory.createPart({
+    const part = parts.createPart({
       name: 'Oil filter',
       price: 20,
       minimumStock: 1,
@@ -92,6 +92,6 @@ describe('Application services', () => {
       WorkOrderActionEnum.FINISH_DIAGNOSIS,
     );
     workOrders.transition(order.code.value, WorkOrderActionEnum.APPROVE_BUDGET);
-    expect(inventory.listParts()[0].stock).toBe(0);
+    expect(parts.listParts()[0].stock).toBe(0);
   });
 });

@@ -6,7 +6,7 @@ import { LicensePlate } from '../../../core/domain/value-objects/license-plate.v
 import { Money } from '../../../core/domain/value-objects/money.value-object';
 import { Quantity } from '../../../core/domain/value-objects/quantity.value-object';
 import { CustomerApplicationService } from '../../customer/services/customer-application.service';
-import { InventoryApplicationService } from '../../inventory/services/inventory-application.service';
+import { PartApplicationService } from '../../part/services/part-application.service';
 import { ServiceApplicationService } from '../../service/services/service-application.service';
 import {
   StoredWorkOrder,
@@ -22,7 +22,7 @@ export class WorkOrderApplicationService {
 
   constructor(
     private readonly customers: CustomerApplicationService,
-    private readonly inventory: InventoryApplicationService,
+    private readonly parts: PartApplicationService,
     private readonly services: ServiceApplicationService,
   ) {}
 
@@ -71,7 +71,7 @@ export class WorkOrderApplicationService {
     const source =
       input.kind === CatalogItemKindEnum.SERVICE
         ? this.services.findById(input.referenceId)
-        : this.inventory.findById(input.referenceId);
+        : this.parts.findById(input.referenceId);
     if (!source) throw new NotFoundException('Catalog item not found');
     order.addItem({
       kind: input.kind,
@@ -124,7 +124,7 @@ export class WorkOrderApplicationService {
       );
     }
     for (const [partId, quantity] of requested)
-      this.inventory.consume(partId, quantity);
+      this.parts.consume(partId, quantity);
     order.approveBudget();
   }
 }

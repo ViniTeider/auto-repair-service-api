@@ -14,7 +14,7 @@ type PartInput = Omit<
 };
 
 @Injectable()
-export class InventoryApplicationService {
+export class PartApplicationService {
   private readonly parts: PartEntity[] = [];
 
   listParts(): PartEntity[] {

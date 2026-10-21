@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { WorkOrderEntity } from '../../core/entities/work-order.entity';
 import { CustomerModule } from '../customer/customer.module';
-import { InventoryModule } from '../inventory/inventory.module';
+import { PartModule } from '../part/part.module';
 import { ServiceModule } from '../service/service.module';
 import { WorkOrderRepository } from './work-order.repository';
 import { WorkOrderApplicationService } from './services/work-order-application.service';
@@ -13,7 +13,7 @@ import { WorkOrderController } from './work-order.controller';
   imports: [
     TypeOrmModule.forFeature([WorkOrderEntity]),
     CustomerModule,
-    InventoryModule,
+    PartModule,
     ServiceModule,
   ],
   controllers: [WorkOrderController],
