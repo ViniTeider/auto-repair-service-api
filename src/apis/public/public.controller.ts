@@ -13,13 +13,13 @@ import { ApiOperation, ApiParam, ApiProduces, ApiTags } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
 import { ApiResponses } from '../../core/decorators/api-responses.decorator';
 import { DomainError } from '../../core/domain/domain-error';
-import { WorkOrderService } from '../work-order/services/work-order.service';
+import { WorkOrderService } from '../work-order/work-order.service';
 import {
   BudgetDecision,
   budgetPage,
   budgetErrorPage,
   budgetResultPage,
-} from './templates/budget-decision.template';
+} from '../../core/templates/budget-page.template';
 
 @ApiTags('public/work-order')
 @Controller('public/work-order')

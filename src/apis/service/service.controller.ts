@@ -21,7 +21,7 @@ import { CreateServiceDto } from '../../core/dtos/service/create-service.dto';
 import { UpdateServiceDto } from '../../core/dtos/service/update-service.dto';
 import { ApiResponses } from '../../core/decorators/api-responses.decorator';
 import { JwtAuthGuard } from '../../core/guards/jwt-auth.guard';
-import { ServiceService } from './services/service.service';
+import { ServiceService } from './service.service';
 
 @ApiTags('service')
 @ApiBearerAuth()

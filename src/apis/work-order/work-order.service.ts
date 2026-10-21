@@ -5,29 +5,29 @@ import {
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
-import { Document } from '../../../core/domain/value-objects/document.value-object';
-import { LicensePlate } from '../../../core/domain/value-objects/license-plate.value-object';
-import { Money } from '../../../core/domain/value-objects/money.value-object';
-import { Quantity } from '../../../core/domain/value-objects/quantity.value-object';
-import { WorkOrder } from '../../../core/domain/work-order.domain';
-import { AddItemDto } from '../../../core/dtos/work-order/add-item.dto';
-import { OpenWorkOrderDto } from '../../../core/dtos/work-order/open-work-order.dto';
+import { Document } from '../../core/domain/value-objects/document.value-object';
+import { LicensePlate } from '../../core/domain/value-objects/license-plate.value-object';
+import { Money } from '../../core/domain/value-objects/money.value-object';
+import { Quantity } from '../../core/domain/value-objects/quantity.value-object';
+import { WorkOrder } from '../../core/domain/work-order.domain';
+import { AddItemDto } from '../../core/dtos/work-order/add-item.dto';
+import { OpenWorkOrderDto } from '../../core/dtos/work-order/open-work-order.dto';
 import {
   WorkOrderBudgetDto,
   WorkOrderResponseDto,
-} from '../../../core/dtos/work-order/work-order-response.dto';
-import { EmailService } from '../../../core/email/email.service';
-import { PartEntity } from '../../../core/entities/part.entity';
-import { WorkOrderEntity } from '../../../core/entities/work-order.entity';
-import { WorkOrderHistoryEntity } from '../../../core/entities/work-order-history.entity';
-import { WorkOrderItemEntity } from '../../../core/entities/work-order-item.entity';
-import { CatalogItemKindEnum } from '../../../core/enums/catalog-item-kind.enum';
-import { WorkOrderActionEnum } from '../../../core/enums/work-order/work-order-action.enum';
-import { CustomerRepository } from '../../customer/customer.repository';
-import { PartRepository } from '../../part/part.repository';
-import { ServiceRepository } from '../../service/service.repository';
-import { VehicleRepository } from '../../vehicle/vehicle.repository';
-import { WorkOrderRepository } from '../work-order.repository';
+} from '../../core/dtos/work-order/work-order-response.dto';
+import { EmailService } from '../../core/email/email.service';
+import { PartEntity } from '../../core/entities/part.entity';
+import { WorkOrderEntity } from '../../core/entities/work-order.entity';
+import { WorkOrderHistoryEntity } from '../../core/entities/work-order-history.entity';
+import { WorkOrderItemEntity } from '../../core/entities/work-order-item.entity';
+import { CatalogItemKindEnum } from '../../core/enums/catalog-item-kind.enum';
+import { WorkOrderActionEnum } from '../../core/enums/work-order/work-order-action.enum';
+import { CustomerRepository } from '../customer/customer.repository';
+import { PartRepository } from '../part/part.repository';
+import { ServiceRepository } from '../service/service.repository';
+import { VehicleRepository } from '../vehicle/vehicle.repository';
+import { WorkOrderRepository } from './work-order.repository';
 
 @Injectable()
 export class WorkOrderService {

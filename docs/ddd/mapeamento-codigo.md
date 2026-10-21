@@ -11,9 +11,9 @@ compartilhado (`src/core`).
 | Camada | Responsabilidade | Onde fica |
 |---|---|---|
 | Apresentação | Rotas HTTP, validação de entrada, Swagger, autenticação | `src/apis/*/*.controller.ts`, `src/core/dtos`, `src/core/guards`, `src/core/filters` |
-| Aplicação | Orquestra os casos de uso e traduz erros em respostas | `src/apis/*/**/*.service.ts` |
+| Aplicação | Orquestra os casos de uso e traduz erros em respostas | `src/apis/*/*.service.ts` |
 | Domínio | Regras de negócio, sem dependência de framework | `src/core/domain` |
-| Infraestrutura | Persistência, e-mail e migrations | `src/apis/*/*.repository.ts`, `src/core/entities`, `src/core/database`, `src/core/email` |
+| Infraestrutura | Persistência, e-mail e migrations | `src/apis/*/*.repository.ts`, `src/core/entities`, `src/core/database`, `src/core/email`, `src/core/templates` |
 
 Fluxo de uma requisição: controller → service → (domínio) → repository → PostgreSQL.
 
@@ -53,7 +53,7 @@ altera, dentro da transação da OS.
 
 O agregado `WorkOrder` é reconstruído a partir das entidades (`WorkOrder.restore`) a cada operação,
 recebe a mudança pelos métodos de domínio e é gravado de volta. Quem faz essa tradução é
-`src/apis/work-order/services/work-order.service.ts` (`toDomain` e `sync`).
+`src/apis/work-order/work-order.service.ts` (`toDomain` e `sync`).
 
 ## Comandos → endpoints
 
@@ -80,7 +80,7 @@ recebe a mudança pelos métodos de domínio e é gravado de volta. Quem faz ess
 | Listar e detalhar OS | `GET /work-order`, `GET /work-order/:code` | `WorkOrderService.list`, `getByCode` |
 | Tempo médio de execução | `GET /work-order/metrics/average-execution-time` | `WorkOrderRepository.averageExecutionMinutes` (SQL) |
 | Acompanhar OS | `GET /public/work-order/:code` | `WorkOrderService.getProgress` |
-| Página do orçamento | `GET /public/work-order/:code/budget` | `WorkOrderService.getBudget`, `src/apis/public/templates/budget-decision.template.ts` |
+| Página do orçamento | `GET /public/work-order/:code/budget` | `WorkOrderService.getBudget`, `src/core/templates/budget-page.template.ts` |
 
 ## Políticas (regras) → onde estão
 
@@ -120,8 +120,8 @@ Os eventos não são classes. Cada um deixa um registro no banco:
 ## Autenticação
 
 `JwtAuthGuard` (`src/core/guards/jwt-auth.guard.ts`) protege todos os controllers administrativos.
-O login confere o e-mail e a senha definidos no `.env` (`ADMIN_DEFAULT_EMAIL` e
-`ADMIN_DEFAULT_PASSWORD`) e assina o token com `JWT_SECRET`. As rotas `/public/work-order` e
+O login confere o e-mail e a senha definidos no `.env` (`ADMIN_EMAIL` e
+`ADMIN_PASSWORD`) e assina o token com `JWT_SECRET`. As rotas `/public/work-order` e
 `/auth/login` são as únicas abertas.
 
 ## Testes que cobrem cada parte

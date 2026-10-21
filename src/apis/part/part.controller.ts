@@ -21,7 +21,7 @@ import { CreatePartDto } from '../../core/dtos/part/create-part.dto';
 import { UpdatePartDto } from '../../core/dtos/part/update-part.dto';
 import { ApiResponses } from '../../core/decorators/api-responses.decorator';
 import { JwtAuthGuard } from '../../core/guards/jwt-auth.guard';
-import { PartService } from './services/part.service';
+import { PartService } from './part.service';
 
 @ApiTags('part')
 @ApiBearerAuth()

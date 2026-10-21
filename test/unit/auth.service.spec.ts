@@ -4,8 +4,8 @@ import { AuthService } from '../../src/apis/auth/auth.service';
 
 describe('AuthService', () => {
   const config = new ConfigService({
-    ADMIN_DEFAULT_EMAIL: 'admin@test.local',
-    ADMIN_DEFAULT_PASSWORD: 'test-admin-password',
+    ADMIN_EMAIL: 'admin@test.local',
+    ADMIN_PASSWORD: 'test-admin-password',
   });
   const jwt = new JwtService({ secret: 'test-secret' });
 
@@ -25,6 +25,6 @@ describe('AuthService', () => {
         new AuthService(jwt, {
           get: () => undefined,
         } as unknown as ConfigService),
-    ).toThrow('ADMIN_DEFAULT_EMAIL');
+    ).toThrow('ADMIN_EMAIL');
   });
 });

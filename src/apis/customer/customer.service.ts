@@ -3,12 +3,12 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Document } from '../../../core/domain/value-objects/document.value-object';
-import { CreateCustomerDto } from '../../../core/dtos/customer/create-customer.dto';
-import { UpdateCustomerDto } from '../../../core/dtos/customer/update-customer.dto';
-import { CustomerEntity } from '../../../core/entities/customer.entity';
-import { isForeignKeyViolation } from '../../../core/utils/database-error.util';
-import { CustomerRepository } from '../customer.repository';
+import { Document } from '../../core/domain/value-objects/document.value-object';
+import { CreateCustomerDto } from '../../core/dtos/customer/create-customer.dto';
+import { UpdateCustomerDto } from '../../core/dtos/customer/update-customer.dto';
+import { CustomerEntity } from '../../core/entities/customer.entity';
+import { isForeignKeyViolation } from '../../core/utils/database-error.util';
+import { CustomerRepository } from './customer.repository';
 
 @Injectable()
 export class CustomerService {

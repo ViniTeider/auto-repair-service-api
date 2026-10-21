@@ -21,7 +21,7 @@ import { CreateCustomerDto } from '../../core/dtos/customer/create-customer.dto'
 import { UpdateCustomerDto } from '../../core/dtos/customer/update-customer.dto';
 import { ApiResponses } from '../../core/decorators/api-responses.decorator';
 import { JwtAuthGuard } from '../../core/guards/jwt-auth.guard';
-import { CustomerService } from './services/customer.service';
+import { CustomerService } from './customer.service';
 
 @ApiTags('customer')
 @ApiBearerAuth()
