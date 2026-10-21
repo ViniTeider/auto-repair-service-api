@@ -30,7 +30,7 @@ describe('Persisted CRUD (e2e)', () => {
     token = login.body.accessToken;
   });
 
-  it.each(['customers', 'vehicles', 'parts', 'services'])(
+  it.each(['customer', 'vehicle', 'part', 'service'])(
     'requires authentication on /%s',
     (route) => {
       return request(app.getHttpServer()).get(`/${route}`).expect(401);
@@ -41,31 +41,31 @@ describe('Persisted CRUD (e2e)', () => {
     const http = app.getHttpServer();
     const plate = randomPlate();
     const created = await request(http)
-      .post('/vehicles')
+      .post('/vehicle')
       .set(auth())
       .send({ licensePlate: plate, make: 'Ford', model: 'Ka', year: 2020 })
       .expect(201);
     await request(http)
-      .post('/vehicles')
+      .post('/vehicle')
       .set(auth())
       .send({ licensePlate: plate, make: 'Ford', model: 'Ka', year: 2020 })
       .expect(409);
     await request(http)
-      .get(`/vehicles/${created.body.id}`)
+      .get(`/vehicle/${created.body.id}`)
       .set(auth())
       .expect(200);
     const updated = await request(http)
-      .patch(`/vehicles/${created.body.id}`)
+      .patch(`/vehicle/${created.body.id}`)
       .set(auth())
       .send({ model: 'Fiesta' })
       .expect(200);
     expect(updated.body.model).toBe('Fiesta');
     await request(http)
-      .delete(`/vehicles/${created.body.id}`)
+      .delete(`/vehicle/${created.body.id}`)
       .set(auth())
       .expect(204);
     await request(http)
-      .get(`/vehicles/${created.body.id}`)
+      .get(`/vehicle/${created.body.id}`)
       .set(auth())
       .expect(404);
   });
@@ -73,29 +73,29 @@ describe('Persisted CRUD (e2e)', () => {
   it('runs the part crud storing cents and replenishing stock', async () => {
     const http = app.getHttpServer();
     const created = await request(http)
-      .post('/parts')
+      .post('/part')
       .set(auth())
       .send({ name: `Filter ${suffix}`, price: 20, stock: 1 })
       .expect(201);
     expect(created.body.price).toBe(20);
     const stocked = await request(http)
-      .post(`/parts/${created.body.id}/stock`)
+      .post(`/part/${created.body.id}/stock`)
       .set(auth())
       .send({ quantity: 4 })
       .expect(201);
     expect(stocked.body.stock).toBe(5);
     await request(http)
-      .patch(`/parts/${created.body.id}`)
+      .patch(`/part/${created.body.id}`)
       .set(auth())
       .send({ price: 30 })
       .expect(200);
     const fetched = await request(http)
-      .get(`/parts/${created.body.id}`)
+      .get(`/part/${created.body.id}`)
       .set(auth())
       .expect(200);
     expect(fetched.body.price).toBe(30);
     await request(http)
-      .delete(`/parts/${created.body.id}`)
+      .delete(`/part/${created.body.id}`)
       .set(auth())
       .expect(204);
   });
@@ -103,22 +103,22 @@ describe('Persisted CRUD (e2e)', () => {
   it('runs the service and customer crud', async () => {
     const http = app.getHttpServer();
     const service = await request(http)
-      .post('/services')
+      .post('/service')
       .set(auth())
       .send({ name: `Oil change ${suffix}`, price: 100 })
       .expect(201);
     await request(http)
-      .patch(`/services/${service.body.id}`)
+      .patch(`/service/${service.body.id}`)
       .set(auth())
       .send({ active: false })
       .expect(200);
     await request(http)
-      .delete(`/services/${service.body.id}`)
+      .delete(`/service/${service.body.id}`)
       .set(auth())
       .expect(204);
 
     const customer = await request(http)
-      .post('/customers')
+      .post('/customer')
       .set(auth())
       .send({
         document: randomCpf(),
@@ -129,12 +129,12 @@ describe('Persisted CRUD (e2e)', () => {
       .expect(201);
     expect(customer.body.document).toMatch(/^\d{11}$/);
     await request(http)
-      .patch(`/customers/${customer.body.id}`)
+      .patch(`/customer/${customer.body.id}`)
       .set(auth())
       .send({ name: 'Maria Silva' })
       .expect(200);
     await request(http)
-      .delete(`/customers/${customer.body.id}`)
+      .delete(`/customer/${customer.body.id}`)
       .set(auth())
       .expect(204);
   });

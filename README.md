@@ -19,8 +19,15 @@ database exposed by `docker-compose.yml`.
 ## API
 
 `POST /auth/login` returns a JWT for the configured admin seed credentials.
-All routes except login and the public lookup below require `Authorization: Bearer <token>`:
-`/customers`, `/vehicles`, `/parts`, `/services` and `/work-orders`
-(including `/work-orders/metrics/average-execution-time`).
-Public progress lookup is available at
-`GET /public/work-orders/:code?document=<cpf-or-cnpj>`.
+All routes except login and the public ones below require `Authorization: Bearer <token>`:
+`/customer`, `/vehicle`, `/part`, `/service` and `/work-order`
+(including `/work-order/metrics/average-execution-time`).
+
+`POST /work-order/:code/:action` moves a work order to a new status; `:action` is the
+status saved in the database: `EM_DIAGNOSTICO`, `AGUARDANDO_APROVACAO`, `FINALIZADA` or `ENTREGUE`.
+
+Public routes (no token, identified only by the work order code):
+
+- `GET /public/work-order/:code` returns the current progress.
+- `POST /public/work-order/:code/approve` approves the budget and starts execution.
+- `POST /public/work-order/:code/deny` denies the budget and returns the order to diagnosis.

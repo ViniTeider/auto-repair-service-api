@@ -62,18 +62,12 @@ export class WorkOrderService {
     );
   }
 
-  async getByCode(
-    code: string,
-    document?: string,
-  ): Promise<WorkOrderResponseDto> {
-    return this.toResponse(await this.findOrFail(code, document));
+  async getByCode(code: string): Promise<WorkOrderResponseDto> {
+    return this.toResponse(await this.findOrFail(code));
   }
 
-  async getProgress(code: string, document?: string) {
-    const { status, history } = this.toResponse(
-      await this.findOrFail(code, document),
-    );
-    return { code, status, history };
+  async getProgress(code: string) {
+    return this.toProgress(this.toResponse(await this.findOrFail(code)));
   }
 
   async addItem(code: string, dto: AddItemDto): Promise<WorkOrderResponseDto> {
@@ -111,33 +105,49 @@ export class WorkOrderService {
     code: string,
     action: WorkOrderActionEnum,
   ): Promise<WorkOrderResponseDto> {
+    return this.apply(code, (order) => {
+      switch (action) {
+        case WorkOrderActionEnum.START_DIAGNOSIS:
+          return order.startDiagnosis();
+        case WorkOrderActionEnum.FINISH_DIAGNOSIS:
+          return order.finishDiagnosis();
+        case WorkOrderActionEnum.FINISH_EXECUTION:
+          return order.finishExecution();
+        case WorkOrderActionEnum.DELIVER:
+          return order.deliver();
+      }
+    });
+  }
+
+  async approve(code: string) {
+    return this.toProgress(
+      await this.apply(code, (order) => order.approveBudget(), true),
+    );
+  }
+
+  async deny(code: string) {
+    return this.toProgress(
+      await this.apply(code, (order) => order.rejectBudget()),
+    );
+  }
+
+  averageExecutionTime(): Promise<{ minutes: number; count: number }> {
+    return this.orders.averageExecutionMinutes();
+  }
+
+  private async apply(
+    code: string,
+    change: (order: WorkOrder) => void,
+    consumesStock = false,
+  ): Promise<WorkOrderResponseDto> {
     const entity = await this.findOrFail(code);
     const order = this.toDomain(entity);
-    switch (action) {
-      case WorkOrderActionEnum.START_DIAGNOSIS:
-        order.startDiagnosis();
-        break;
-      case WorkOrderActionEnum.FINISH_DIAGNOSIS:
-        order.finishDiagnosis();
-        break;
-      case WorkOrderActionEnum.APPROVE_BUDGET:
-        order.approveBudget();
-        break;
-      case WorkOrderActionEnum.REJECT_BUDGET:
-        order.rejectBudget();
-        break;
-      case WorkOrderActionEnum.FINISH_EXECUTION:
-        order.finishExecution();
-        break;
-      case WorkOrderActionEnum.DELIVER:
-        order.deliver();
-        break;
-    }
+    change(order);
     this.sync(entity, order);
     entity.history.push(
       Object.assign(new WorkOrderHistoryEntity(), { status: order.status }),
     );
-    if (action === WorkOrderActionEnum.APPROVE_BUDGET) {
+    if (consumesStock) {
       await this.orders.saveApproved(entity, this.partConsumption(order));
     } else {
       await this.orders.save(entity);
@@ -145,22 +155,15 @@ export class WorkOrderService {
     return this.getByCode(code);
   }
 
-  averageExecutionTime(): Promise<{ minutes: number; count: number }> {
-    return this.orders.averageExecutionMinutes();
+  private async findOrFail(code: string): Promise<WorkOrderEntity> {
+    const entity = await this.orders.findByCode(code);
+    if (!entity) throw new NotFoundException('Work order not found');
+    return entity;
   }
 
-  private async findOrFail(
-    code: string,
-    document?: string,
-  ): Promise<WorkOrderEntity> {
-    const entity = await this.orders.findByCode(code);
-    if (
-      !entity ||
-      (document && entity.customer.document !== Document.create(document).value)
-    ) {
-      throw new NotFoundException('Work order not found');
-    }
-    return entity;
+  private toProgress(order: WorkOrderResponseDto) {
+    const { code, status, budgetStatus, history } = order;
+    return { code, status, budgetStatus, history };
   }
 
   private partConsumption(order: WorkOrder): Map<string, number> {

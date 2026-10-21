@@ -85,10 +85,7 @@ describe('WorkOrderService', () => {
 
     await service.transition(opened.code, WorkOrderActionEnum.START_DIAGNOSIS);
     await service.transition(opened.code, WorkOrderActionEnum.FINISH_DIAGNOSIS);
-    const approved = await service.transition(
-      opened.code,
-      WorkOrderActionEnum.APPROVE_BUDGET,
-    );
+    const approved = await service.approve(opened.code);
 
     expect(approved.status).toBe('EM_EXECUCAO');
     expect(orders.saveApproved).toHaveBeenCalledWith(
@@ -97,14 +94,10 @@ describe('WorkOrderService', () => {
     );
   });
 
-  it('does not find unknown orders or orders of another customer', async () => {
+  it('does not find unknown orders', async () => {
     const { service } = createService();
     await expect(service.getByCode('OS-UNKNOWN')).rejects.toThrow(
       'Work order not found',
     );
-    const opened = await open(service);
-    await expect(
-      service.getByCode(opened.code, '111.444.777-35'),
-    ).rejects.toThrow('Work order not found');
   });
 });
