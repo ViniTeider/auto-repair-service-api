@@ -1,7 +1,7 @@
 # Security checks
 
 The application applies Helmet, global DTO validation, bcrypt password hashing,
-expiring JWTs, JWT protection on administrative routes, and throttling defaults.
+expiring JWTs and JWT protection on administrative routes.
 
 Run the following checks before release and attach their generated output here:
 
