@@ -4,6 +4,7 @@ const config: Config = {
   moduleFileExtensions: ['js', 'json', 'ts'],
   rootDir: '..',
   testEnvironment: 'node',
+  setupFiles: ['<rootDir>/test/set-env.ts'],
   maxWorkers: 1,
   testRegex: 'test/.*\\.e2e-spec\\.ts$',
   extensionsToTreatAsEsm: ['.ts'],

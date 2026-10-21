@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { EmailModule } from '../../core/email/email.module';
 import { WorkOrderEntity } from '../../core/entities/work-order.entity';
 import { AuthModule } from '../auth/auth.module';
 import { CustomerModule } from '../customer/customer.module';
@@ -18,6 +19,7 @@ import { WorkOrderRepository } from './work-order.repository';
     VehicleModule,
     PartModule,
     ServiceModule,
+    EmailModule,
   ],
   controllers: [WorkOrderController],
   providers: [WorkOrderRepository, WorkOrderService],

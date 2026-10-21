@@ -18,7 +18,6 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { CreatePartDto } from '../../core/dtos/part/create-part.dto';
-import { ReplenishPartDto } from '../../core/dtos/part/replenish-part.dto';
 import { UpdatePartDto } from '../../core/dtos/part/update-part.dto';
 import { ApiResponses } from '../../core/decorators/api-responses.decorator';
 import { JwtAuthGuard } from '../../core/guards/jwt-auth.guard';
@@ -93,21 +92,5 @@ export class PartController {
   })
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.parts.remove(id);
-  }
-
-  @Post(':id/stock')
-  @ApiOperation({ summary: 'Replenish part stock' })
-  @ApiParam({ name: 'id', format: 'uuid' })
-  @ApiResponses({
-    success: { status: HttpStatus.CREATED, description: 'Stock replenished' },
-    badRequest: true,
-    unauthorized: true,
-    notFound: 'Part not found',
-  })
-  replenish(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body() dto: ReplenishPartDto,
-  ) {
-    return this.parts.replenish(id, dto.quantity);
   }
 }

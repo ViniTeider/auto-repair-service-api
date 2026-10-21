@@ -5,9 +5,20 @@ import { WorkOrderActionEnum } from '../../src/core/enums/work-order/work-order-
 import { WorkOrderEntity } from '../../src/core/entities/work-order.entity';
 
 describe('WorkOrderService', () => {
-  const customer = { id: 'customer-1', document: '52998224725' };
+  const customer = {
+    id: 'customer-1',
+    document: '52998224725',
+    name: 'Maria',
+    email: 'maria@example.com',
+  };
   const vehicle = { id: 'vehicle-1', licensePlate: 'ABC1234' };
-  const part = { id: 'part-1', name: 'Oil filter', price: 2000 };
+  const part = {
+    id: 'part-1',
+    name: 'Oil filter',
+    price: 2000,
+    stock: 10,
+    minimumStock: 2,
+  };
 
   const createService = () => {
     let stored: WorkOrderEntity | null = null;
@@ -36,14 +47,16 @@ describe('WorkOrderService', () => {
       findById: jest.fn(async (id: string) => (id === part.id ? part : null)),
     };
     const services = { findById: jest.fn(async () => null) };
+    const email = { sendBudgetEmail: jest.fn(async () => undefined) };
     const service = new WorkOrderService(
       orders as never,
       customers as never,
       vehicles as never,
       parts as never,
       services as never,
+      email as never,
     );
-    return { service, orders };
+    return { service, orders, email };
   };
 
   const open = async (service: WorkOrderService) => {
@@ -98,6 +111,70 @@ describe('WorkOrderService', () => {
     const { service } = createService();
     await expect(service.getByCode('OS-UNKNOWN')).rejects.toThrow(
       'Work order not found',
+    );
+  });
+
+  it('refuses items that would leave the stock below the minimum', async () => {
+    const { service } = createService();
+    const opened = await open(service);
+    // 10 in stock with a minimum of 2: at most 8 units can be used
+    await service.addItem(opened.code, {
+      kind: CatalogItemKindEnum.PART,
+      referenceId: part.id,
+      quantity: 8,
+    });
+    await expect(
+      service.addItem(opened.code, {
+        kind: CatalogItemKindEnum.PART,
+        referenceId: part.id,
+        quantity: 1,
+      }),
+    ).rejects.toThrow('minimum stock');
+  });
+
+  it('removes a quantity of an item, validating what exists in the order', async () => {
+    const { service } = createService();
+    const opened = await open(service);
+    await service.addItem(opened.code, {
+      kind: CatalogItemKindEnum.PART,
+      referenceId: part.id,
+      quantity: 3,
+    });
+    await expect(service.removeItem(opened.code, part.id, 4)).rejects.toThrow(
+      'Quantity exceeds',
+    );
+    await expect(
+      service.removeItem(opened.code, 'other-part', 1),
+    ).rejects.toThrow('Item not found');
+    const updated = await service.removeItem(opened.code, part.id, 2);
+    expect(updated.items).toEqual([
+      expect.objectContaining({ referenceId: part.id, quantity: 1 }),
+    ]);
+    expect(updated.total).toBe(20);
+  });
+
+  it('sends the budget email only to the order customer and when awaiting approval', async () => {
+    const { service, email } = createService();
+    const opened = await open(service);
+    await service.addItem(opened.code, {
+      kind: CatalogItemKindEnum.PART,
+      referenceId: part.id,
+      quantity: 1,
+    });
+    await expect(
+      service.sendBudget(opened.code, { customerDocument: '529.982.247-25' }),
+    ).rejects.toThrow('awaiting approval');
+
+    await service.transition(opened.code, WorkOrderActionEnum.START_DIAGNOSIS);
+    await service.transition(opened.code, WorkOrderActionEnum.FINISH_DIAGNOSIS);
+    await expect(
+      service.sendBudget(opened.code, { customerDocument: '111.444.777-35' }),
+    ).rejects.toThrow('does not match');
+    await expect(
+      service.sendBudget(opened.code, { customerDocument: '529.982.247-25' }),
+    ).resolves.toEqual({ message: 'Budget email sent' });
+    expect(email.sendBudgetEmail).toHaveBeenCalledWith(
+      expect.objectContaining({ to: 'maria@example.com', code: opened.code }),
     );
   });
 });

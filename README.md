@@ -18,16 +18,31 @@ database exposed by `docker-compose.yml`.
 
 ## API
 
-`POST /auth/login` returns a JWT for the configured admin seed credentials.
+`POST /auth/login` returns a JWT for the admin credentials set in `.env`
+(`ADMIN_DEFAULT_EMAIL` and `ADMIN_DEFAULT_PASSWORD`, both required, as is `JWT_SECRET`).
 All routes except login and the public ones below require `Authorization: Bearer <token>`:
-`/customer`, `/vehicle`, `/part`, `/service` and `/work-order`
+`/customer`, `/vehicle`, `/part`, `/service`, `/inventory` and `/work-order`
 (including `/work-order/metrics/average-execution-time`).
 
 `POST /work-order/:code/:action` moves a work order to a new status; `:action` is the
 status saved in the database: `EM_DIAGNOSTICO`, `AGUARDANDO_APROVACAO`, `FINALIZADA` or `ENTREGUE`.
 
+Work order items: `POST /work-order/:code/item` adds a part or service and
+`DELETE /work-order/:code/item/:referenceId?quantity=n` removes a quantity of it. A part can
+only be added if the remaining stock stays at or above its `minimumStock`.
+
+Stock: `POST /inventory` registers a movement for a part (`partId`, `type`, `quantity`, `reason`):
+`ENTRY` adds to the balance, `EXIT` removes from it and `ADJUSTMENT` sets the balance to
+`quantity`, ignoring the previous one.
+
+Budget: `POST /work-order/:code/send-budget` (body `customerDocument`) emails the customer the
+budget with approve and deny buttons. It needs the order awaiting approval. Configure `SMTP_*`,
+`EMAIL_FROM` and `APP_PUBLIC_URL` in `.env`; without `SMTP_HOST` the email is not delivered.
+
 Public routes (no token, identified only by the work order code):
 
 - `GET /public/work-order/:code` returns the current progress.
+- `GET /public/work-order/:code/approve` and `/deny` show a confirmation page (the email links);
+  the decision is made by the `POST` of its form, so link scanners cannot decide by accident.
 - `POST /public/work-order/:code/approve` approves the budget and starts execution.
 - `POST /public/work-order/:code/deny` denies the budget and returns the order to diagnosis.

@@ -4,6 +4,7 @@ import { APP_FILTER } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from '../apis/auth/auth.module';
 import { CustomerModule } from '../apis/customer/customer.module';
+import { InventoryModule } from '../apis/inventory/inventory.module';
 import { PartModule } from '../apis/part/part.module';
 import { PublicModule } from '../apis/public/public.module';
 import { ServiceModule } from '../apis/service/service.module';
@@ -23,6 +24,7 @@ import { HttpExceptionFilter } from '../core/filters/http-exception.filter';
     PublicModule,
     CustomerModule,
     PartModule,
+    InventoryModule,
     ServiceModule,
     VehicleModule,
     WorkOrderModule,

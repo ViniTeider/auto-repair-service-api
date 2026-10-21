@@ -4,7 +4,6 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Money } from '../../../core/domain/value-objects/money.value-object';
-import { Quantity } from '../../../core/domain/value-objects/quantity.value-object';
 import { CreatePartDto } from '../../../core/dtos/part/create-part.dto';
 import { UpdatePartDto } from '../../../core/dtos/part/update-part.dto';
 import { PartEntity } from '../../../core/entities/part.entity';
@@ -39,12 +38,6 @@ export class PartService {
     const { price, ...rest } = dto;
     Object.assign(part, rest);
     if (price !== undefined) part.price = Money.fromAmount(price).cents;
-    return this.toResponse(await this.parts.save(part));
-  }
-
-  async replenish(id: string, quantity: number): Promise<PartEntity> {
-    const part = await this.findOrFail(id);
-    part.stock += Quantity.create(quantity).value;
     return this.toResponse(await this.parts.save(part));
   }
 

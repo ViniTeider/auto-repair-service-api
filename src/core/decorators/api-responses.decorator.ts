@@ -10,6 +10,7 @@ type ApiResponsesOptions = {
   notFound?: Description;
   conflict?: Description;
   unprocessable?: Description;
+  serviceUnavailable?: Description;
 };
 
 const ERRORS: {

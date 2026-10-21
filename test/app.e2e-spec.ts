@@ -33,8 +33,8 @@ describe('API (e2e)', () => {
     const login = await request(http)
       .post('/auth/login')
       .send({
-        email: 'admin@repair-shop.com',
-        password: 'AdminSecurePassword123!',
+        email: 'admin@test.local',
+        password: 'test-admin-password',
       })
       .expect(201);
     const auth = {
@@ -78,8 +78,12 @@ describe('API (e2e)', () => {
         name: `Oil filter ${suffix}`,
         price: 20,
         minimumStock: 1,
-        stock: 2,
       })
+      .expect(201);
+    await request(http)
+      .post('/inventory')
+      .set(auth)
+      .send({ partId: part.body.id, type: 'ENTRY', quantity: 2 })
       .expect(201);
 
     const opened = await request(http)
@@ -94,18 +98,23 @@ describe('API (e2e)', () => {
     expect(opened.body.status).toBe('RECEBIDA');
 
     await request(http)
-      .post(`/work-order/${code}/items`)
+      .post(`/work-order/${code}/item`)
       .set(auth)
       .send({ kind: 'SERVICE', referenceId: service.body.id, quantity: 1 })
       .expect(201);
     const withItems = await request(http)
-      .post(`/work-order/${code}/items`)
+      .post(`/work-order/${code}/item`)
       .set(auth)
       .send({ kind: 'PART', referenceId: part.body.id, quantity: 1 })
       .expect(201);
     expect(withItems.body.total).toBe(120);
     expect(withItems.body.items).toHaveLength(2);
 
+    await request(http)
+      .post(`/work-order/${code}/send-budget`)
+      .set(auth)
+      .send({ customerDocument: customer.body.document })
+      .expect(422);
     await request(http)
       .post(`/work-order/${code}/UNKNOWN`)
       .set(auth)
@@ -118,6 +127,26 @@ describe('API (e2e)', () => {
       .post(`/work-order/${code}/AGUARDANDO_APROVACAO`)
       .set(auth)
       .expect(201);
+    await request(http)
+      .post(`/work-order/${code}/send-budget`)
+      .set(auth)
+      .send({ customerDocument: randomCpf() })
+      .expect(400);
+    await request(http)
+      .post(`/work-order/${code}/send-budget`)
+      .set(auth)
+      .send({ customerDocument: customer.body.document })
+      .expect(201)
+      .expect({ message: 'Budget email sent' });
+    await request(http)
+      .get(`/public/work-order/${code}/approve`)
+      .expect(200)
+      .expect('Content-Type', /html/)
+      .expect((response) => {
+        expect(response.text).toContain(code);
+        expect(response.text).toContain('method="post"');
+      });
+    await request(http).get('/public/work-order/OS-UNKNOWN/deny').expect(404);
     await request(http)
       .post(`/public/work-order/${code}/approve`)
       .expect(201)
@@ -177,8 +206,8 @@ describe('API (e2e)', () => {
   it('lets the customer deny a budget and returns the order to diagnosis', async () => {
     const http = app.getHttpServer();
     const login = await request(http).post('/auth/login').send({
-      email: 'admin@repair-shop.com',
-      password: 'AdminSecurePassword123!',
+      email: 'admin@test.local',
+      password: 'test-admin-password',
     });
     const auth = {
       Authorization: `Bearer ${login.body.accessToken as string}`,
@@ -209,7 +238,7 @@ describe('API (e2e)', () => {
 
     await request(http).post(`/public/work-order/${code}/deny`).expect(422);
     await request(http)
-      .post(`/work-order/${code}/items`)
+      .post(`/work-order/${code}/item`)
       .set(auth)
       .send({ kind: 'SERVICE', referenceId: service.body.id, quantity: 1 })
       .expect(201);
@@ -230,11 +259,87 @@ describe('API (e2e)', () => {
       });
   });
 
+  it('removes items from a work order and enforces the minimum stock', async () => {
+    const http = app.getHttpServer();
+    const login = await request(http).post('/auth/login').send({
+      email: 'admin@test.local',
+      password: 'test-admin-password',
+    });
+    const auth = {
+      Authorization: `Bearer ${login.body.accessToken as string}`,
+    };
+    const suffix = Date.now().toString(36);
+
+    const customer = await request(http).post('/customer').set(auth).send({
+      document: randomCpf(),
+      name: 'Carla',
+      email: 'carla@example.com',
+      phone: '11966666666',
+    });
+    const vehicle = await request(http).post('/vehicle').set(auth).send({
+      licensePlate: randomPlate(),
+      make: 'Honda',
+      model: 'Fit',
+      year: 2021,
+    });
+    const service = await request(http)
+      .post('/service')
+      .set(auth)
+      .send({ name: `Balancing ${suffix}`, price: 60 });
+    const part = await request(http)
+      .post('/part')
+      .set(auth)
+      .send({ name: `Tire ${suffix}`, price: 300, minimumStock: 2 });
+    await request(http)
+      .post('/inventory')
+      .set(auth)
+      .send({ partId: part.body.id, type: 'ENTRY', quantity: 3 })
+      .expect(201);
+    const order = await request(http).post('/work-order').set(auth).send({
+      customerDocument: customer.body.document,
+      vehiclePlate: vehicle.body.licensePlate,
+    });
+    const code = order.body.code as string;
+    const addItem = (kind: string, referenceId: string, quantity: number) =>
+      request(http)
+        .post(`/work-order/${code}/item`)
+        .set(auth)
+        .send({ kind, referenceId, quantity });
+
+    // 3 in stock with a minimum of 2: only one unit can leave
+    await addItem('PART', part.body.id, 1).expect(201);
+    await addItem('PART', part.body.id, 1).expect(400);
+    await addItem('SERVICE', service.body.id, 3).expect(201);
+
+    const remove = (referenceId: string, quantity: number | string) =>
+      request(http)
+        .delete(`/work-order/${code}/item/${referenceId}`)
+        .query({ quantity })
+        .set(auth);
+    await remove(service.body.id, 5).expect(422);
+    await remove('00000000-0000-4000-8000-000000000000', 1).expect(422);
+    await remove(service.body.id, 0).expect(400);
+    await remove('not-a-uuid', 1).expect(400);
+    await request(http)
+      .delete(`/work-order/${code}/item/${service.body.id}`)
+      .expect(401);
+
+    const removed = await remove(service.body.id, 2).expect(200);
+    expect(removed.body.total).toBe(360);
+    expect(removed.body.items).toEqual([
+      expect.objectContaining({ referenceId: part.body.id, quantity: 1 }),
+      expect.objectContaining({ referenceId: service.body.id, quantity: 1 }),
+    ]);
+    const cleared = await remove(part.body.id, 1).expect(200);
+    expect(cleared.body.items).toHaveLength(1);
+    expect(cleared.body.total).toBe(60);
+  });
+
   it('refuses to approve a budget without enough stock', async () => {
     const http = app.getHttpServer();
     const login = await request(http).post('/auth/login').send({
-      email: 'admin@repair-shop.com',
-      password: 'AdminSecurePassword123!',
+      email: 'admin@test.local',
+      password: 'test-admin-password',
     });
     const auth = {
       Authorization: `Bearer ${login.body.accessToken as string}`,
@@ -256,7 +361,12 @@ describe('API (e2e)', () => {
     const part = await request(http)
       .post('/part')
       .set(auth)
-      .send({ name: `Brake pad ${suffix}`, price: 50, stock: 0 });
+      .send({ name: `Brake pad ${suffix}`, price: 50 });
+    await request(http)
+      .post('/inventory')
+      .set(auth)
+      .send({ partId: part.body.id, type: 'ENTRY', quantity: 1 })
+      .expect(201);
     const order = await request(http).post('/work-order').set(auth).send({
       customerDocument: customer.body.document,
       vehiclePlate: vehicle.body.licensePlate,
@@ -264,7 +374,7 @@ describe('API (e2e)', () => {
     const code = order.body.code as string;
 
     await request(http)
-      .post(`/work-order/${code}/items`)
+      .post(`/work-order/${code}/item`)
       .set(auth)
       .send({ kind: 'PART', referenceId: part.body.id, quantity: 1 })
       .expect(201);
@@ -275,6 +385,12 @@ describe('API (e2e)', () => {
     await request(http)
       .post(`/work-order/${code}/AGUARDANDO_APROVACAO`)
       .set(auth)
+      .expect(201);
+    // the stock leaves after the item was accepted, so the approval must fail
+    await request(http)
+      .post('/inventory')
+      .set(auth)
+      .send({ partId: part.body.id, type: 'EXIT', quantity: 1 })
       .expect(201);
     await request(http).post(`/public/work-order/${code}/approve`).expect(400);
 

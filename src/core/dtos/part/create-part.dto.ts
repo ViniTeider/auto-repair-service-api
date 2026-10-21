@@ -17,10 +17,4 @@ export class CreatePartDto {
   @IsInt()
   @Min(0)
   minimumStock?: number;
-
-  @ApiPropertyOptional({ default: 0, minimum: 0 })
-  @IsOptional()
-  @IsInt()
-  @Min(0)
-  stock?: number;
 }

@@ -16,6 +16,7 @@ export class WorkOrderItemEntity {
 
   @ManyToOne(() => WorkOrderEntity, (workOrder) => workOrder.items, {
     onDelete: 'CASCADE',
+    orphanedRowAction: 'delete',
   })
   @JoinColumn({ name: 'workOrderId' })
   workOrder!: Relation<WorkOrderEntity>;

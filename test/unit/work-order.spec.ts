@@ -66,7 +66,9 @@ describe('WorkOrder', () => {
     order.startDiagnosis();
     order.finishDiagnosis();
     order.approveBudget();
-    expect(() => order.removeItem('service-1')).toThrow(DomainError);
+    expect(() => order.removeItem('service-1', Quantity.create(1))).toThrow(
+      DomainError,
+    );
   });
 
   it('requires items before finishing diagnosis and supports budget sending', () => {
@@ -82,7 +84,7 @@ describe('WorkOrder', () => {
       quantity: Quantity.create(1),
     });
     order.startDiagnosis();
-    order.removeItem('service-1');
+    order.removeItem('service-1', Quantity.create(1));
     expect(order.itemsSnapshot).toHaveLength(0);
     order.addItem({
       kind: CatalogItemKindEnum.SERVICE,
@@ -95,5 +97,32 @@ describe('WorkOrder', () => {
     expect(() => order.sendBudget()).not.toThrow();
     order.rejectBudget();
     expect(() => order.approveBudget()).toThrow(DomainError);
+  });
+
+  it('removes part of an item quantity and validates the amount', () => {
+    const order = createOrder();
+    const item = {
+      kind: CatalogItemKindEnum.PART,
+      referenceId: 'part-1',
+      description: 'Filter',
+      unitPrice: Money.fromAmount(20),
+      quantity: Quantity.create(2),
+    };
+    order.addItem(item);
+    order.addItem({ ...item, quantity: Quantity.create(1) });
+    expect(order.total.toAmount()).toBe(60);
+
+    expect(() => order.removeItem('part-2', Quantity.create(1))).toThrow(
+      'Item not found in the work order',
+    );
+    expect(() => order.removeItem('part-1', Quantity.create(4))).toThrow(
+      'Quantity exceeds the amount in the work order',
+    );
+
+    order.removeItem('part-1', Quantity.create(2));
+    expect(order.total.toAmount()).toBe(20);
+    expect(order.itemsSnapshot).toHaveLength(1);
+    order.removeItem('part-1', Quantity.create(1));
+    expect(order.itemsSnapshot).toHaveLength(0);
   });
 });

@@ -1,6 +1,5 @@
 import 'reflect-metadata';
 import { DataSource } from 'typeorm';
-import { AdminUserEntity } from '../entities/admin-user.entity';
 import { CustomerEntity } from '../entities/customer.entity';
 import { PartEntity } from '../entities/part.entity';
 import { ServiceEntity } from '../entities/service.entity';
@@ -18,7 +17,6 @@ export const AppDataSource = new DataSource({
   password: process.env.DB_PASSWORD ?? 'postgres',
   database: process.env.DB_NAME ?? 'repair_shop_db',
   entities: [
-    AdminUserEntity,
     CustomerEntity,
     VehicleEntity,
     ServiceEntity,

@@ -101,45 +101,35 @@ export class WorkOrder {
     return this.executionFinishedAt;
   }
 
-  toJSON(): object {
-    return {
-      id: this.id,
-      code: this.code,
-      customerDocument: this.customerDocument,
-      vehiclePlate: this.vehiclePlate,
-      items: this.items,
-      status: this.status,
-      budgetStatus: this.budgetStatus,
-      total: this.total,
-      createdAt: this.createdAt,
-      startedAt: this.startedAt,
-      finishedAt: this.finishedAt,
-    };
-  }
-
   addItem(item: WorkOrderItem): void {
-    if (
-      ![
-        WorkOrderStatusEnum.RECEIVED,
-        WorkOrderStatusEnum.IN_DIAGNOSIS,
-      ].includes(this.statusValue)
-    ) {
-      throw new DomainError('Items can only be changed before budget approval');
-    }
+    this.assertItemsEditable();
     this.items.push(item);
     this.recalculateBudget();
   }
 
-  removeItem(referenceId: string): void {
-    if (
-      ![
-        WorkOrderStatusEnum.RECEIVED,
-        WorkOrderStatusEnum.IN_DIAGNOSIS,
-      ].includes(this.statusValue)
-    ) {
-      throw new DomainError('Items can only be changed before budget approval');
+  removeItem(referenceId: string, quantity: Quantity): void {
+    this.assertItemsEditable();
+    const available = this.items
+      .filter((item) => item.referenceId === referenceId)
+      .reduce((total, item) => total + item.quantity.value, 0);
+    if (available === 0) {
+      throw new DomainError('Item not found in the work order');
     }
-    this.items = this.items.filter((item) => item.referenceId !== referenceId);
+    if (quantity.value > available) {
+      throw new DomainError('Quantity exceeds the amount in the work order');
+    }
+    let remaining = quantity.value;
+    this.items = this.items.reduceRight<WorkOrderItem[]>((kept, item) => {
+      if (item.referenceId !== referenceId || remaining === 0) {
+        return [item, ...kept];
+      }
+      const taken = Math.min(item.quantity.value, remaining);
+      remaining -= taken;
+      const left = item.quantity.value - taken;
+      return left > 0
+        ? [{ ...item, quantity: Quantity.create(left) }, ...kept]
+        : kept;
+    }, []);
     this.recalculateBudget();
   }
 
@@ -195,6 +185,17 @@ export class WorkOrder {
     this.transition(WorkOrderStatusEnum.DELIVERED, [
       WorkOrderStatusEnum.FINISHED,
     ]);
+  }
+
+  private assertItemsEditable(): void {
+    if (
+      ![
+        WorkOrderStatusEnum.RECEIVED,
+        WorkOrderStatusEnum.IN_DIAGNOSIS,
+      ].includes(this.statusValue)
+    ) {
+      throw new DomainError('Items can only be changed before budget approval');
+    }
   }
 
   private recalculateBudget(): void {

@@ -32,6 +32,7 @@ const config: Config = {
   ],
   coverageDirectory: './coverage',
   testEnvironment: 'node',
+  setupFiles: ['<rootDir>/test/set-env.ts'],
   coverageThreshold: {
     global: { branches: 0, functions: 0, lines: 0, statements: 0 },
     './src/core/domain/**/*.ts': { lines: 80, statements: 80 },

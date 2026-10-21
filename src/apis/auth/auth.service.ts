@@ -1,17 +1,24 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UserRoleEnum } from '../../core/enums/user-role.enum';
 
 @Injectable()
 export class AuthService {
-  private readonly adminEmail =
-    process.env.ADMIN_DEFAULT_EMAIL ?? 'admin@repair-shop.com';
-  private readonly adminPassword =
-    process.env.ADMIN_DEFAULT_PASSWORD ?? 'AdminSecurePassword123!';
-  private readonly adminHash = bcrypt.hashSync(this.adminPassword, 10);
+  private readonly adminEmail: string;
+  private readonly adminHash: string;
 
-  constructor(private readonly jwt: JwtService) {}
+  constructor(
+    private readonly jwt: JwtService,
+    config: ConfigService,
+  ) {
+    this.adminEmail = this.required(config, 'ADMIN_DEFAULT_EMAIL');
+    this.adminHash = bcrypt.hashSync(
+      this.required(config, 'ADMIN_DEFAULT_PASSWORD'),
+      10,
+    );
+  }
 
   async login(
     email: string,
@@ -29,5 +36,11 @@ export class AuthService {
         role: UserRoleEnum.ADMIN,
       }),
     };
+  }
+
+  private required(config: ConfigService, key: string): string {
+    const value = config.get<string>(key);
+    if (!value) throw new Error(`Missing required environment variable ${key}`);
+    return value;
   }
 }

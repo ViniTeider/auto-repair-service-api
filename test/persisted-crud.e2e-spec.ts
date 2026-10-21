@@ -24,8 +24,8 @@ describe('Persisted CRUD (e2e)', () => {
     await app.init();
 
     const login = await request(app.getHttpServer()).post('/auth/login').send({
-      email: 'admin@repair-shop.com',
-      password: 'AdminSecurePassword123!',
+      email: 'admin@test.local',
+      password: 'test-admin-password',
     });
     token = login.body.accessToken;
   });
@@ -70,20 +70,14 @@ describe('Persisted CRUD (e2e)', () => {
       .expect(404);
   });
 
-  it('runs the part crud storing cents and replenishing stock', async () => {
+  it('runs the part crud storing cents', async () => {
     const http = app.getHttpServer();
     const created = await request(http)
       .post('/part')
       .set(auth())
-      .send({ name: `Filter ${suffix}`, price: 20, stock: 1 })
+      .send({ name: `Filter ${suffix}`, price: 20 })
       .expect(201);
     expect(created.body.price).toBe(20);
-    const stocked = await request(http)
-      .post(`/part/${created.body.id}/stock`)
-      .set(auth())
-      .send({ quantity: 4 })
-      .expect(201);
-    expect(stocked.body.stock).toBe(5);
     await request(http)
       .patch(`/part/${created.body.id}`)
       .set(auth())
@@ -98,6 +92,44 @@ describe('Persisted CRUD (e2e)', () => {
       .delete(`/part/${created.body.id}`)
       .set(auth())
       .expect(204);
+  });
+
+  it('controls the stock with entry, exit and adjustment movements', async () => {
+    const http = app.getHttpServer();
+    const part = await request(http)
+      .post('/part')
+      .set(auth())
+      .send({ name: `Spark plug ${suffix}`, price: 15 })
+      .expect(201);
+    const move = (type: string, quantity: number) =>
+      request(http)
+        .post('/inventory')
+        .set(auth())
+        .send({ partId: part.body.id, type, quantity });
+
+    expect((await move('ENTRY', 5).expect(201)).body.balance).toBe(5);
+    expect((await move('EXIT', 2).expect(201)).body.balance).toBe(3);
+    await move('EXIT', 10).expect(400);
+    expect((await move('ADJUSTMENT', 1).expect(201)).body.balance).toBe(1);
+    expect((await move('ADJUSTMENT', 0).expect(201)).body.balance).toBe(0);
+    await move('ENTRY', 0).expect(422);
+    await move('UNKNOWN', 1).expect(400);
+    await request(http)
+      .post('/inventory')
+      .set(auth())
+      .send({
+        partId: '00000000-0000-4000-8000-000000000000',
+        type: 'ENTRY',
+        quantity: 1,
+      })
+      .expect(404);
+
+    const fetched = await request(http)
+      .get(`/part/${part.body.id}`)
+      .set(auth())
+      .expect(200);
+    expect(fetched.body.stock).toBe(0);
+    await request(http).post('/inventory').expect(401);
   });
 
   it('runs the service and customer crud', async () => {

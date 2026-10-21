@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { Document } from '../../../core/domain/value-objects/document.value-object';
 import { LicensePlate } from '../../../core/domain/value-objects/license-plate.value-object';
@@ -6,8 +11,11 @@ import { Money } from '../../../core/domain/value-objects/money.value-object';
 import { Quantity } from '../../../core/domain/value-objects/quantity.value-object';
 import { WorkOrder } from '../../../core/domain/work-order.domain';
 import { AddItemDto } from '../../../core/dtos/work-order/add-item.dto';
+import { SendBudgetDto } from '../../../core/dtos/work-order/send-budget.dto';
 import { OpenWorkOrderDto } from '../../../core/dtos/work-order/open-work-order.dto';
 import { WorkOrderResponseDto } from '../../../core/dtos/work-order/work-order-response.dto';
+import { EmailService } from '../../../core/email/email.service';
+import { PartEntity } from '../../../core/entities/part.entity';
 import { WorkOrderEntity } from '../../../core/entities/work-order.entity';
 import { WorkOrderHistoryEntity } from '../../../core/entities/work-order-history.entity';
 import { WorkOrderItemEntity } from '../../../core/entities/work-order-item.entity';
@@ -27,6 +35,7 @@ export class WorkOrderService {
     private readonly vehicles: VehicleRepository,
     private readonly parts: PartRepository,
     private readonly services: ServiceRepository,
+    private readonly email: EmailService,
   ) {}
 
   async open(dto: OpenWorkOrderDto): Promise<WorkOrderResponseDto> {
@@ -78,6 +87,15 @@ export class WorkOrderService {
         ? await this.services.findById(dto.referenceId)
         : await this.parts.findById(dto.referenceId);
     if (!source) throw new NotFoundException('Catalog item not found');
+    if (dto.kind === CatalogItemKindEnum.PART) {
+      const alreadyInOrder = order.itemsSnapshot
+        .filter((item) => item.referenceId === source.id)
+        .reduce((total, item) => total + item.quantity.value, 0);
+      this.assertStockAvailable(
+        source as PartEntity,
+        alreadyInOrder + dto.quantity,
+      );
+    }
 
     order.addItem({
       kind: dto.kind,
@@ -86,19 +104,52 @@ export class WorkOrderService {
       unitPrice: Money.fromCents(source.price),
       quantity: Quantity.create(dto.quantity),
     });
-    const item = order.itemsSnapshot[order.itemsSnapshot.length - 1];
-    entity.items.push(
-      Object.assign(new WorkOrderItemEntity(), {
-        kind: item.kind,
-        referenceId: item.referenceId,
-        description: item.description,
-        unitPriceInCents: item.unitPrice.cents,
-        quantity: item.quantity.value,
-      }),
-    );
+    this.syncItems(entity, order);
     this.sync(entity, order);
     await this.orders.save(entity);
     return this.getByCode(code);
+  }
+
+  async removeItem(
+    code: string,
+    referenceId: string,
+    quantity: number,
+  ): Promise<WorkOrderResponseDto> {
+    const entity = await this.findOrFail(code);
+    const order = this.toDomain(entity);
+    order.removeItem(referenceId, Quantity.create(quantity));
+    this.syncItems(entity, order);
+    this.sync(entity, order);
+    await this.orders.save(entity);
+    return this.getByCode(code);
+  }
+
+  async sendBudget(
+    code: string,
+    dto: SendBudgetDto,
+  ): Promise<{ message: string }> {
+    const entity = await this.findOrFail(code);
+    if (
+      Document.create(dto.customerDocument).value !== entity.customer.document
+    ) {
+      throw new BadRequestException(
+        'Document does not match the customer of this work order',
+      );
+    }
+    this.toDomain(entity).sendBudget();
+    const response = this.toResponse(entity);
+    try {
+      await this.email.sendBudgetEmail({
+        to: entity.customer.email,
+        customerName: entity.customer.name,
+        code: entity.code,
+        items: response.items,
+        total: response.total,
+      });
+    } catch {
+      throw new ServiceUnavailableException('Unable to send the budget email');
+    }
+    return { message: 'Budget email sent' };
   }
 
   async transition(
@@ -133,6 +184,26 @@ export class WorkOrderService {
 
   averageExecutionTime(): Promise<{ minutes: number; count: number }> {
     return this.orders.averageExecutionMinutes();
+  }
+
+  private assertStockAvailable(part: PartEntity, requested: number): void {
+    if (part.stock - requested < (part.minimumStock ?? 0)) {
+      throw new BadRequestException(
+        'Insufficient stock: the remaining stock would fall below the minimum stock',
+      );
+    }
+  }
+
+  private syncItems(entity: WorkOrderEntity, order: WorkOrder): void {
+    entity.items = order.itemsSnapshot.map((item) =>
+      Object.assign(new WorkOrderItemEntity(), {
+        kind: item.kind,
+        referenceId: item.referenceId,
+        description: item.description,
+        unitPriceInCents: item.unitPrice.cents,
+        quantity: item.quantity.value,
+      }),
+    );
   }
 
   private async apply(

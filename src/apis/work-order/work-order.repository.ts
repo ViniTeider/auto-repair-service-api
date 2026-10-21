@@ -41,9 +41,9 @@ export class WorkOrderRepository {
           where: { id: partId },
           lock: { mode: 'pessimistic_write' },
         });
-        if (!part || part.stock < quantity) {
+        if (!part || part.stock - quantity < (part.minimumStock ?? 0)) {
           throw new BadRequestException(
-            'Insufficient stock for budget approval',
+            'Insufficient stock: the remaining stock would fall below the minimum stock',
           );
         }
         part.stock -= quantity;
