@@ -6,10 +6,9 @@ import {
   budgetEmailTemplate,
 } from './templates/budget-email.template';
 
-export type SendBudgetEmailParams = Omit<
-  BudgetEmailData,
-  'approveUrl' | 'denyUrl'
-> & { to: string };
+export type SendBudgetEmailParams = Omit<BudgetEmailData, 'budgetUrl'> & {
+  to: string;
+};
 
 @Injectable()
 export class EmailService {
@@ -39,11 +38,9 @@ export class EmailService {
   async sendBudgetEmail({ to, ...data }: SendBudgetEmailParams): Promise<void> {
     const baseUrl =
       this.config.get<string>('APP_PUBLIC_URL') ?? 'http://localhost:3000';
-    const workOrderUrl = `${baseUrl}/public/work-order/${encodeURIComponent(data.code)}`;
     const { subject, html, text } = budgetEmailTemplate({
       ...data,
-      approveUrl: `${workOrderUrl}/approve`,
-      denyUrl: `${workOrderUrl}/deny`,
+      budgetUrl: `${baseUrl}/public/work-order/${encodeURIComponent(data.code)}/budget`,
     });
     await this.transporter.sendMail({
       from: this.config.get<string>('EMAIL_FROM') ?? 'no-reply@localhost',

@@ -11,7 +11,13 @@ describe('WorkOrderService', () => {
     name: 'Maria',
     email: 'maria@example.com',
   };
-  const vehicle = { id: 'vehicle-1', licensePlate: 'ABC1234' };
+  const vehicle = {
+    id: 'vehicle-1',
+    licensePlate: 'ABC1234',
+    make: 'Ford',
+    model: 'Ka',
+    year: 2020,
+  };
   const part = {
     id: 'part-1',
     name: 'Oil filter',
@@ -153,7 +159,7 @@ describe('WorkOrderService', () => {
     expect(updated.total).toBe(20);
   });
 
-  it('sends the budget email only to the order customer and when awaiting approval', async () => {
+  it('sends the budget email to the order customer only when awaiting approval', async () => {
     const { service, email } = createService();
     const opened = await open(service);
     await service.addItem(opened.code, {
@@ -161,20 +167,40 @@ describe('WorkOrderService', () => {
       referenceId: part.id,
       quantity: 1,
     });
-    await expect(
-      service.sendBudget(opened.code, { customerDocument: '529.982.247-25' }),
-    ).rejects.toThrow('awaiting approval');
+    await expect(service.sendBudget(opened.code)).rejects.toThrow(
+      'awaiting approval',
+    );
 
     await service.transition(opened.code, WorkOrderActionEnum.START_DIAGNOSIS);
     await service.transition(opened.code, WorkOrderActionEnum.FINISH_DIAGNOSIS);
-    await expect(
-      service.sendBudget(opened.code, { customerDocument: '111.444.777-35' }),
-    ).rejects.toThrow('does not match');
-    await expect(
-      service.sendBudget(opened.code, { customerDocument: '529.982.247-25' }),
-    ).resolves.toEqual({ message: 'Budget email sent' });
+    await expect(service.sendBudget(opened.code)).resolves.toEqual({
+      message: 'Budget email sent',
+    });
     expect(email.sendBudgetEmail).toHaveBeenCalledWith(
       expect.objectContaining({ to: 'maria@example.com', code: opened.code }),
+    );
+  });
+
+  it('exposes the budget details for the public page', async () => {
+    const { service } = createService();
+    const opened = await open(service);
+    await service.addItem(opened.code, {
+      kind: CatalogItemKindEnum.PART,
+      referenceId: part.id,
+      quantity: 2,
+    });
+    await expect(service.getBudget(opened.code)).resolves.toEqual(
+      expect.objectContaining({
+        code: opened.code,
+        total: 40,
+        vehicle: expect.objectContaining({
+          make: 'Ford',
+          licensePlate: 'ABC1234',
+        }),
+        items: [
+          expect.objectContaining({ description: 'Oil filter', quantity: 2 }),
+        ],
+      }),
     );
   });
 });

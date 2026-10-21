@@ -113,8 +113,8 @@ describe('API (e2e)', () => {
     await request(http)
       .post(`/work-order/${code}/send-budget`)
       .set(auth)
-      .send({ customerDocument: customer.body.document })
       .expect(422);
+    await request(http).post(`/work-order/${code}/send-budget`).expect(401);
     await request(http)
       .post(`/work-order/${code}/UNKNOWN`)
       .set(auth)
@@ -130,29 +130,35 @@ describe('API (e2e)', () => {
     await request(http)
       .post(`/work-order/${code}/send-budget`)
       .set(auth)
-      .send({ customerDocument: randomCpf() })
-      .expect(400);
-    await request(http)
-      .post(`/work-order/${code}/send-budget`)
-      .set(auth)
-      .send({ customerDocument: customer.body.document })
       .expect(201)
       .expect({ message: 'Budget email sent' });
     await request(http)
-      .get(`/public/work-order/${code}/approve`)
+      .get(`/public/work-order/${code}/budget`)
       .expect(200)
       .expect('Content-Type', /html/)
       .expect((response) => {
         expect(response.text).toContain(code);
-        expect(response.text).toContain('method="post"');
+        expect(response.text).toContain(`Oil change ${suffix}`);
+        expect(response.text).toContain(`Oil filter ${suffix}`);
+        expect(response.text).toContain('Ford');
+        expect(response.text).toContain(`/public/work-order/${code}/approve`);
+        expect(response.text).toContain(`/public/work-order/${code}/deny`);
       });
-    await request(http).get('/public/work-order/OS-UNKNOWN/deny').expect(404);
+    await request(http).get('/public/work-order/OS-UNKNOWN/budget').expect(404);
     await request(http)
       .post(`/public/work-order/${code}/approve`)
       .expect(201)
       .expect((response) => {
         expect(response.body.status).toBe('EM_EXECUCAO');
         expect(response.body.budgetStatus).toBe('APPROVED');
+      });
+
+    await request(http)
+      .get(`/public/work-order/${code}/budget`)
+      .expect(200)
+      .expect((response) => {
+        expect(response.text).not.toContain('method="post"');
+        expect(response.text).toContain('EM_EXECUCAO');
       });
 
     const stocked = await request(http)

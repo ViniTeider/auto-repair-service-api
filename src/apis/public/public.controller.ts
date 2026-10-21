@@ -16,7 +16,7 @@ import { DomainError } from '../../core/domain/domain-error';
 import { WorkOrderService } from '../work-order/services/work-order.service';
 import {
   BudgetDecision,
-  budgetConfirmationPage,
+  budgetPage,
   budgetErrorPage,
   budgetResultPage,
 } from './templates/budget-decision.template';
@@ -40,23 +40,23 @@ export class PublicController {
     return this.orders.getProgress(code);
   }
 
-  @Get(':code/approve')
+  @Get(':code/budget')
   @Header('Content-Type', 'text/html; charset=utf-8')
   @ApiOperation({
-    summary: 'Confirmation page to approve the budget (link sent by email)',
+    summary:
+      'Budget page with the work order details and the approve and deny buttons (link sent by email)',
   })
   @ApiParam({ name: 'code' })
   @ApiProduces('text/html')
   @ApiResponses({
     success: {
       status: HttpStatus.OK,
-      description: 'HTML page asking the customer to confirm the approval',
+      description: 'HTML page with the budget and the approve and deny buttons',
     },
     notFound: 'Work order not found',
   })
-  async approvePage(@Param('code') code: string) {
-    await this.orders.getProgress(code);
-    return budgetConfirmationPage(code, 'approve');
+  async budget(@Param('code') code: string) {
+    return budgetPage(await this.orders.getBudget(code));
   }
 
   @Post(':code/approve')
@@ -78,25 +78,6 @@ export class PublicController {
     @Res({ passthrough: true }) response: Response,
   ) {
     return this.decide(code, 'approve', request, response);
-  }
-
-  @Get(':code/deny')
-  @Header('Content-Type', 'text/html; charset=utf-8')
-  @ApiOperation({
-    summary: 'Confirmation page to deny the budget (link sent by email)',
-  })
-  @ApiParam({ name: 'code' })
-  @ApiProduces('text/html')
-  @ApiResponses({
-    success: {
-      status: HttpStatus.OK,
-      description: 'HTML page asking the customer to confirm the denial',
-    },
-    notFound: 'Work order not found',
-  })
-  async denyPage(@Param('code') code: string) {
-    await this.orders.getProgress(code);
-    return budgetConfirmationPage(code, 'deny');
   }
 
   @Post(':code/deny')

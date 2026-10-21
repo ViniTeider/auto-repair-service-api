@@ -11,9 +11,11 @@ import { Money } from '../../../core/domain/value-objects/money.value-object';
 import { Quantity } from '../../../core/domain/value-objects/quantity.value-object';
 import { WorkOrder } from '../../../core/domain/work-order.domain';
 import { AddItemDto } from '../../../core/dtos/work-order/add-item.dto';
-import { SendBudgetDto } from '../../../core/dtos/work-order/send-budget.dto';
 import { OpenWorkOrderDto } from '../../../core/dtos/work-order/open-work-order.dto';
-import { WorkOrderResponseDto } from '../../../core/dtos/work-order/work-order-response.dto';
+import {
+  WorkOrderBudgetDto,
+  WorkOrderResponseDto,
+} from '../../../core/dtos/work-order/work-order-response.dto';
 import { EmailService } from '../../../core/email/email.service';
 import { PartEntity } from '../../../core/entities/part.entity';
 import { WorkOrderEntity } from '../../../core/entities/work-order.entity';
@@ -124,18 +126,8 @@ export class WorkOrderService {
     return this.getByCode(code);
   }
 
-  async sendBudget(
-    code: string,
-    dto: SendBudgetDto,
-  ): Promise<{ message: string }> {
+  async sendBudget(code: string): Promise<{ message: string }> {
     const entity = await this.findOrFail(code);
-    if (
-      Document.create(dto.customerDocument).value !== entity.customer.document
-    ) {
-      throw new BadRequestException(
-        'Document does not match the customer of this work order',
-      );
-    }
     this.toDomain(entity).sendBudget();
     const response = this.toResponse(entity);
     try {
@@ -150,6 +142,26 @@ export class WorkOrderService {
       throw new ServiceUnavailableException('Unable to send the budget email');
     }
     return { message: 'Budget email sent' };
+  }
+
+  async getBudget(code: string): Promise<WorkOrderBudgetDto> {
+    const entity = await this.findOrFail(code);
+    const { items, total, status, budgetStatus, createdAt } =
+      this.toResponse(entity);
+    return {
+      code: entity.code,
+      vehicle: {
+        licensePlate: entity.vehicle.licensePlate,
+        make: entity.vehicle.make,
+        model: entity.vehicle.model,
+        year: entity.vehicle.year,
+      },
+      items,
+      total,
+      status,
+      budgetStatus,
+      createdAt,
+    };
   }
 
   async transition(

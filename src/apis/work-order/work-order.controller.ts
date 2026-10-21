@@ -20,7 +20,6 @@ import {
 import { ApiResponses } from '../../core/decorators/api-responses.decorator';
 import { AddItemDto } from '../../core/dtos/work-order/add-item.dto';
 import { RemoveItemQueryDto } from '../../core/dtos/work-order/remove-item-query.dto';
-import { SendBudgetDto } from '../../core/dtos/work-order/send-budget.dto';
 import { OpenWorkOrderDto } from '../../core/dtos/work-order/open-work-order.dto';
 import { WorkOrderActionEnum } from '../../core/enums/work-order/work-order-action.enum';
 import { JwtAuthGuard } from '../../core/guards/jwt-auth.guard';
@@ -132,20 +131,18 @@ export class WorkOrderController {
   @Post(':code/send-budget')
   @ApiOperation({
     summary:
-      'Send the budget to the customer by email with approve and deny buttons',
+      'Email the budget to the work order customer with a link to approve or deny it',
   })
   @ApiParam({ name: 'code' })
   @ApiResponses({
     success: { status: HttpStatus.CREATED, description: 'Budget email sent' },
-    badRequest:
-      'Invalid data or document does not match the work order customer',
     unauthorized: true,
     notFound: 'Work order not found',
     unprocessable: 'Work order is not awaiting approval or has no items',
     serviceUnavailable: 'Unable to send the email',
   })
-  sendBudget(@Param('code') code: string, @Body() dto: SendBudgetDto) {
-    return this.orders.sendBudget(code, dto);
+  sendBudget(@Param('code') code: string) {
+    return this.orders.sendBudget(code);
   }
 
   @Post(':code/:action')

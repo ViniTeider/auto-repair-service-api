@@ -29,3 +29,20 @@ export class WorkOrderResponseDto {
   finishedAt!: Date | null;
   createdAt!: Date;
 }
+
+export class WorkOrderBudgetVehicleDto {
+  licensePlate!: string;
+  make!: string;
+  model!: string;
+  year!: number;
+}
+
+export class WorkOrderBudgetDto {
+  code!: string;
+  vehicle!: WorkOrderBudgetVehicleDto;
+  items!: WorkOrderItemResponseDto[];
+  total!: number;
+  status!: WorkOrderStatusEnum;
+  budgetStatus!: BudgetStatusEnum;
+  createdAt!: Date;
+}

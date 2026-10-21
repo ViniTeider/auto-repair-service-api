@@ -35,14 +35,15 @@ Stock: `POST /inventory` registers a movement for a part (`partId`, `type`, `qua
 `ENTRY` adds to the balance, `EXIT` removes from it and `ADJUSTMENT` sets the balance to
 `quantity`, ignoring the previous one.
 
-Budget: `POST /work-order/:code/send-budget` (body `customerDocument`) emails the customer the
-budget with approve and deny buttons. It needs the order awaiting approval. Configure `SMTP_*`,
+Budget: `POST /work-order/:code/send-budget` emails the order customer the budget with a link to
+the budget page. It needs the order awaiting approval. Configure `SMTP_*`,
 `EMAIL_FROM` and `APP_PUBLIC_URL` in `.env`; without `SMTP_HOST` the email is not delivered.
 
 Public routes (no token, identified only by the work order code):
 
 - `GET /public/work-order/:code` returns the current progress.
-- `GET /public/work-order/:code/approve` and `/deny` show a confirmation page (the email links);
-  the decision is made by the `POST` of its form, so link scanners cannot decide by accident.
+- `GET /public/work-order/:code/budget` shows the budget (vehicle, items and total) with the approve
+  and deny buttons (the email link); the decision is made by the `POST` of a button form, so
+  link scanners cannot decide by accident.
 - `POST /public/work-order/:code/approve` approves the budget and starts execution.
 - `POST /public/work-order/:code/deny` denies the budget and returns the order to diagnosis.
