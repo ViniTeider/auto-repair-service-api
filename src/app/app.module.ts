@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from '../apis/auth/auth.module';
@@ -16,9 +16,22 @@ import { HttpExceptionFilter } from '../core/filters/http-exception.filter';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    TypeOrmModule.forRoot({
-      ...AppDataSource.options,
-      autoLoadEntities: true,
+    // The connection reads DB_* through ConfigService so values from the .env file are applied.
+    TypeOrmModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        type: 'postgres' as const,
+        entities: AppDataSource.options.entities,
+        migrations: AppDataSource.options.migrations,
+        migrationsRun: true,
+        synchronize: false,
+        host: config.get<string>('DB_HOST') ?? 'localhost',
+        port: Number(config.get<string>('DB_PORT') ?? 5432),
+        username: config.get<string>('DB_USER') ?? 'postgres',
+        password: config.get<string>('DB_PASSWORD') ?? 'postgres',
+        database: config.get<string>('DB_NAME') ?? 'repair_shop_db',
+        autoLoadEntities: true,
+      }),
     }),
     AuthModule,
     PublicModule,

@@ -32,3 +32,6 @@ lerna-debug.log*
 *.njsproj
 *.sln
 *.sw?
+# Test coverage and TypeScript build info
+/coverage
+*.tsbuildinfo
