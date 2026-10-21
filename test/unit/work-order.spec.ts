@@ -1,22 +1,24 @@
-import { Document } from '../../src/shared/domain/value-objects/document';
-import { LicensePlate } from '../../src/shared/domain/value-objects/license-plate';
-import { Money } from '../../src/shared/domain/value-objects/money';
-import { Quantity } from '../../src/shared/domain/value-objects/quantity';
-import { DomainError } from '../../src/shared/domain/domain-error';
-import { WorkOrder } from '../../src/modules/work-order/entity/work-order';
-import { WorkOrderStatus } from '../../src/modules/work-order/entity/work-order-status';
+import { Document } from '../../src/core/domain/value-objects/document.value-object';
+import { LicensePlate } from '../../src/core/domain/value-objects/license-plate.value-object';
+import { Money } from '../../src/core/domain/value-objects/money.value-object';
+import { Quantity } from '../../src/core/domain/value-objects/quantity.value-object';
+import { DomainError } from '../../src/core/domain/domain-error';
+import { WorkOrder } from '../../src/core/domain/work-order.domain';
+import { WorkOrderStatusEnum } from '../../src/core/enums/work-order/work-order-status.enum';
+import { CatalogItemKindEnum } from '../../src/core/enums/catalog-item-kind.enum';
 
 describe('WorkOrder', () => {
-  const createOrder = () => WorkOrder.open({
-    id: 'wo-1',
-    customerDocument: Document.create('529.982.247-25'),
-    vehiclePlate: LicensePlate.create('ABC-1234'),
-  });
+  const createOrder = () =>
+    WorkOrder.open({
+      id: 'wo-1',
+      customerDocument: Document.create('529.982.247-25'),
+      vehiclePlate: LicensePlate.create('ABC-1234'),
+    });
 
   it('calculates the budget and follows the lifecycle', () => {
     const order = createOrder();
     order.addItem({
-      kind: 'SERVICE',
+      kind: CatalogItemKindEnum.SERVICE,
       referenceId: 'service-1',
       description: 'Oil change',
       unitPrice: Money.fromAmount(100),
@@ -28,18 +30,18 @@ describe('WorkOrder', () => {
     expect(order.budgetStatus).toBe('PENDING');
     expect(order.itemsSnapshot).toHaveLength(1);
     order.approveBudget();
-    expect(order.status).toBe(WorkOrderStatus.IN_EXECUTION);
+    expect(order.status).toBe(WorkOrderStatusEnum.IN_EXECUTION);
     expect(order.startedAt).toBeInstanceOf(Date);
     order.finishExecution();
     expect(order.finishedAt).toBeInstanceOf(Date);
     order.deliver();
-    expect(order.status).toBe(WorkOrderStatus.DELIVERED);
+    expect(order.status).toBe(WorkOrderStatusEnum.DELIVERED);
   });
 
   it('returns a rejected budget to diagnosis', () => {
     const order = createOrder();
     order.addItem({
-      kind: 'PART',
+      kind: CatalogItemKindEnum.PART,
       referenceId: 'part-1',
       description: 'Filter',
       unitPrice: Money.fromAmount(20),
@@ -48,14 +50,14 @@ describe('WorkOrder', () => {
     order.startDiagnosis();
     order.finishDiagnosis();
     order.rejectBudget();
-    expect(order.status).toBe(WorkOrderStatus.IN_DIAGNOSIS);
+    expect(order.status).toBe(WorkOrderStatusEnum.IN_DIAGNOSIS);
   });
 
   it('rejects invalid transitions and item changes after approval', () => {
     const order = createOrder();
     expect(() => order.finishExecution()).toThrow(DomainError);
     order.addItem({
-      kind: 'SERVICE',
+      kind: CatalogItemKindEnum.SERVICE,
       referenceId: 'service-1',
       description: 'Alignment',
       unitPrice: Money.fromAmount(80),
@@ -73,7 +75,7 @@ describe('WorkOrder', () => {
     expect(() => empty.finishDiagnosis()).toThrow(DomainError);
     const order = createOrder();
     order.addItem({
-      kind: 'SERVICE',
+      kind: CatalogItemKindEnum.SERVICE,
       referenceId: 'service-1',
       description: 'Brake check',
       unitPrice: Money.fromAmount(50),
@@ -83,7 +85,7 @@ describe('WorkOrder', () => {
     order.removeItem('service-1');
     expect(order.itemsSnapshot).toHaveLength(0);
     order.addItem({
-      kind: 'SERVICE',
+      kind: CatalogItemKindEnum.SERVICE,
       referenceId: 'service-1',
       description: 'Brake check',
       unitPrice: Money.fromAmount(50),

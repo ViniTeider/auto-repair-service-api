@@ -1,10 +1,10 @@
-import { DomainError } from '../../src/shared/domain/domain-error';
-import { Document } from '../../src/shared/domain/value-objects/document';
-import { LicensePlate } from '../../src/shared/domain/value-objects/license-plate';
-import { Money } from '../../src/shared/domain/value-objects/money';
-import { Quantity } from '../../src/shared/domain/value-objects/quantity';
-import { VehicleYear } from '../../src/shared/domain/value-objects/vehicle-year';
-import { WorkOrderCode } from '../../src/shared/domain/value-objects/work-order-code';
+import { DomainError } from '../../src/core/domain/domain-error';
+import { Document } from '../../src/core/domain/value-objects/document.value-object';
+import { LicensePlate } from '../../src/core/domain/value-objects/license-plate.value-object';
+import { Money } from '../../src/core/domain/value-objects/money.value-object';
+import { Quantity } from '../../src/core/domain/value-objects/quantity.value-object';
+import { VehicleYear } from '../../src/core/domain/value-objects/vehicle-year.value-object';
+import { WorkOrderCode } from '../../src/core/domain/value-objects/work-order-code.value-object';
 
 describe('shared value objects', () => {
   it('accepts valid CPF and CNPJ documents', () => {
@@ -23,7 +23,9 @@ describe('shared value objects', () => {
   });
 
   it('supports money arithmetic and positive quantities', () => {
-    expect(Money.fromAmount(10.5).add(Money.fromAmount(2)).toAmount()).toBe(12.5);
+    expect(Money.fromAmount(10.5).add(Money.fromAmount(2)).toAmount()).toBe(
+      12.5,
+    );
     expect(Money.fromAmount(3).multiply(2).toAmount()).toBe(6);
     expect(Quantity.create(1).value).toBe(1);
     expect(() => Quantity.create(0)).toThrow(DomainError);
@@ -37,7 +39,9 @@ describe('shared value objects', () => {
     expect(generatedCode.toJSON()).toBe(generatedCode.value);
     expect(WorkOrderCode.create('OS-ABC123').value).toBe('OS-ABC123');
     expect(() => WorkOrderCode.create('x')).toThrow(DomainError);
-    expect(VehicleYear.create(new Date().getFullYear()).value).toBe(new Date().getFullYear());
+    expect(VehicleYear.create(new Date().getFullYear()).value).toBe(
+      new Date().getFullYear(),
+    );
     expect(() => VehicleYear.create(1800)).toThrow(DomainError);
   });
 });

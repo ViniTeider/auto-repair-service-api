@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { App } from 'supertest/types';
-import { AppModule } from './../src/app.module';
+import { AppModule } from '../src/app/app.module';
 
 describe('API (e2e)', () => {
   let app: INestApplication<App>;
@@ -17,9 +17,7 @@ describe('API (e2e)', () => {
   });
 
   it('rejects unauthenticated administrative requests', () => {
-    return request(app.getHttpServer())
-      .get('/admin/customers')
-      .expect(401);
+    return request(app.getHttpServer()).get('/admin/customers').expect(401);
   });
 
   it('executes the complete repair-order application flow', async () => {
@@ -154,10 +152,12 @@ describe('API (e2e)', () => {
       .query({ document: customerResponse.body.document })
       .expect(200);
 
-    expect(publicProgressResponse.body).toEqual(expect.objectContaining({
-      code: workOrderCode,
-      status: 'ENTREGUE',
-    }));
+    expect(publicProgressResponse.body).toEqual(
+      expect.objectContaining({
+        code: workOrderCode,
+        status: 'ENTREGUE',
+      }),
+    );
 
     await request(app.getHttpServer())
       .get('/admin/customers')

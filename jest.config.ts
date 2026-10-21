@@ -34,8 +34,7 @@ const config: Config = {
   testEnvironment: 'node',
   coverageThreshold: {
     global: { branches: 0, functions: 0, lines: 0, statements: 0 },
-    './src/shared/domain/**/*.ts': { lines: 80, statements: 80 },
-    './src/modules/work-order/entity/**/*.ts': { lines: 80, statements: 80 },
+    './src/core/domain/**/*.ts': { lines: 80, statements: 80 },
   },
 };
 
