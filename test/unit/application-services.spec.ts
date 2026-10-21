@@ -94,4 +94,37 @@ describe('Application services', () => {
     workOrders.transition(order.code.value, WorkOrderActionEnum.APPROVE_BUDGET);
     expect(parts.listParts()[0].stock).toBe(0);
   });
+  it('updates and deletes vehicles, parts and services', () => {
+    const { customers, parts, services } = createServices();
+    const vehicle = customers.createVehicle({
+      licensePlate: 'ABC-1234',
+      make: 'Ford',
+      model: 'Ka',
+      year: 2020,
+    });
+    customers.createVehicle({
+      licensePlate: 'XYZ-9876',
+      make: 'Fiat',
+      model: 'Uno',
+      year: 2019,
+    });
+    expect(customers.updateVehicle(vehicle.id, { model: 'Fiesta' }).model).toBe(
+      'Fiesta',
+    );
+    expect(() =>
+      customers.updateVehicle(vehicle.id, { licensePlate: 'XYZ-9876' }),
+    ).toThrow('Vehicle license plate already exists');
+    customers.deleteVehicle(vehicle.id);
+    expect(() => customers.getVehicle(vehicle.id)).toThrow('Vehicle not found');
+
+    const part = parts.createPart({ name: 'Oil filter', price: 20 });
+    expect(parts.updatePart(part.id, { price: 25 }).price).toBe(25);
+    parts.deletePart(part.id);
+    expect(() => parts.getPart(part.id)).toThrow('Part not found');
+
+    const service = services.create({ name: 'Oil change', price: 100 });
+    expect(services.update(service.id, { price: 120 }).price).toBe(120);
+    services.remove(service.id);
+    expect(() => services.get(service.id)).toThrow('Service not found');
+  });
 });

@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { ServiceEntity } from '../../../core/entities/service.entity';
 
@@ -27,6 +31,29 @@ export class ServiceApplicationService {
     };
     this.services.push(service);
     return service;
+  }
+
+  get(id: string): ServiceEntity {
+    const service = this.findById(id);
+    if (!service) throw new NotFoundException('Service not found');
+    return service;
+  }
+
+  update(
+    id: string,
+    input: Partial<Omit<ServiceEntity, 'id' | 'createdAt' | 'updatedAt'>>,
+  ): ServiceEntity {
+    const service = this.get(id);
+    if ((input.price ?? 0) < 0)
+      throw new BadRequestException('Price must be non-negative');
+    Object.assign(service, input);
+    return service;
+  }
+
+  remove(id: string): void {
+    const index = this.services.findIndex((service) => service.id === id);
+    if (index < 0) throw new NotFoundException('Service not found');
+    this.services.splice(index, 1);
   }
 
   findById(id: string): ServiceEntity | undefined {

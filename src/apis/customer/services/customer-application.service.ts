@@ -72,6 +72,40 @@ export class CustomerApplicationService {
     return vehicle;
   }
 
+  getVehicle(id: string): VehicleEntity {
+    const vehicle = this.vehicles.find((candidate) => candidate.id === id);
+    if (!vehicle) throw new NotFoundException('Vehicle not found');
+    return vehicle;
+  }
+
+  updateVehicle(
+    id: string,
+    input: Partial<Omit<VehicleEntity, 'id' | 'createdAt'>>,
+  ): VehicleEntity {
+    const vehicle = this.getVehicle(id);
+    if (input.licensePlate) {
+      const licensePlate = LicensePlate.create(input.licensePlate).value;
+      if (
+        this.vehicles.some(
+          (candidate) =>
+            candidate.id !== id && candidate.licensePlate === licensePlate,
+        )
+      ) {
+        throw new ConflictException('Vehicle license plate already exists');
+      }
+      input = { ...input, licensePlate };
+    }
+    if (input.year !== undefined) VehicleYear.create(input.year);
+    Object.assign(vehicle, input);
+    return vehicle;
+  }
+
+  deleteVehicle(id: string): void {
+    const index = this.vehicles.findIndex((vehicle) => vehicle.id === id);
+    if (index < 0) throw new NotFoundException('Vehicle not found');
+    this.vehicles.splice(index, 1);
+  }
+
   hasCustomer(document: string): boolean {
     return this.customers.some((customer) => customer.document === document);
   }

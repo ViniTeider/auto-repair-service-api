@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -7,6 +16,7 @@ import {
 } from '@nestjs/swagger';
 import { CreatePartDto } from '../../../core/dtos/part/create-part.dto';
 import { ReplenishPartDto } from '../../../core/dtos/part/replenish-part.dto';
+import { UpdatePartDto } from '../../../core/dtos/part/update-part.dto';
 import { JwtAuthGuard } from '../../../core/guards/jwt-auth.guard';
 import { PartApplicationService } from '../../part/services/part-application.service';
 
@@ -27,6 +37,27 @@ export class AdminPartController {
   @ApiOperation({ summary: 'Create a part' })
   create(@Body() body: CreatePartDto) {
     return this.partApp.createPart(body);
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Get a part' })
+  @ApiParam({ name: 'id' })
+  findOne(@Param('id') id: string) {
+    return this.partApp.getPart(id);
+  }
+
+  @Patch(':id')
+  @ApiOperation({ summary: 'Update a part' })
+  @ApiParam({ name: 'id' })
+  update(@Param('id') id: string, @Body() body: UpdatePartDto) {
+    return this.partApp.updatePart(id, body);
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: 'Delete a part' })
+  @ApiParam({ name: 'id' })
+  remove(@Param('id') id: string) {
+    return this.partApp.deletePart(id);
   }
 
   @Post(':id/stock')
