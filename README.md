@@ -19,6 +19,8 @@ database exposed by `docker-compose.yml`.
 ## API
 
 `POST /auth/login` returns a JWT for the configured admin seed credentials.
-Administrative routes under `/admin/*` require `Authorization: Bearer <token>`.
+All routes except login and the public lookup below require `Authorization: Bearer <token>`:
+`/customers`, `/vehicles`, `/parts`, `/services` and `/work-orders`
+(including `/work-orders/metrics/average-execution-time`).
 Public progress lookup is available at
 `GET /public/work-orders/:code?document=<cpf-or-cnpj>`.
