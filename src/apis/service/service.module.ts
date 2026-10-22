@@ -3,7 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ServiceEntity } from '../../core/entities/service.entity';
 import { AuthModule } from '../auth/auth.module';
 import { ServiceRepository } from './service.repository';
-import { ServiceService } from './services/service.service';
+import { ServiceService } from './service.service';
 import { ServiceController } from './service.controller';
 
 @Module({

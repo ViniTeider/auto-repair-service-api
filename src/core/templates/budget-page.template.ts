@@ -1,14 +1,10 @@
-import { WorkOrderBudgetDto } from '../../../core/dtos/work-order/work-order-response.dto';
-import { BudgetStatusEnum } from '../../../core/enums/work-order/budget-status.enum';
-import { WorkOrderStatusEnum } from '../../../core/enums/work-order/work-order-status.enum';
-import { escapeHtml } from '../../../core/utils/html.util';
+import { WorkOrderBudgetDto } from '../dtos/work-order/work-order-response.dto';
+import { BudgetStatusEnum } from '../enums/work-order/budget-status.enum';
+import { WorkOrderStatusEnum } from '../enums/work-order/work-order-status.enum';
+import { formatCurrency } from '../utils/currency.util';
+import { escapeHtml } from '../utils/html.util';
 
 export type BudgetDecision = 'approve' | 'deny';
-
-const money = (value: number) =>
-  new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
-    value,
-  );
 
 const page = (title: string, body: string) => `<!doctype html>
 <html lang="pt-BR">
@@ -34,7 +30,7 @@ export function budgetPage(budget: WorkOrderBudgetDto): string {
   const rows = budget.items
     .map(
       (item) =>
-        `<tr><td style="padding:6px 8px;">${escapeHtml(item.description)}</td><td style="padding:6px 8px;text-align:center;">${item.quantity}</td><td style="padding:6px 8px;text-align:right;">${money(item.unitPrice)}</td><td style="padding:6px 8px;text-align:right;">${money(item.unitPrice * item.quantity)}</td></tr>`,
+        `<tr><td style="padding:6px 8px;">${escapeHtml(item.description)}</td><td style="padding:6px 8px;text-align:center;">${item.quantity}</td><td style="padding:6px 8px;text-align:right;">${formatCurrency(item.unitPrice)}</td><td style="padding:6px 8px;text-align:right;">${formatCurrency(item.unitPrice * item.quantity)}</td></tr>`,
     )
     .join('');
   const awaitingDecision =
@@ -52,7 +48,7 @@ export function budgetPage(budget: WorkOrderBudgetDto): string {
     <table style="border-collapse:collapse;width:100%;">
       <thead><tr><th style="padding:6px 8px;text-align:left;">Item</th><th style="padding:6px 8px;">Qtd.</th><th style="padding:6px 8px;text-align:right;">Valor unit.</th><th style="padding:6px 8px;text-align:right;">Subtotal</th></tr></thead>
       <tbody>${rows}</tbody>
-      <tfoot><tr><td colspan="3" style="padding:8px;text-align:right;"><strong>Total</strong></td><td style="padding:8px;text-align:right;"><strong>${money(budget.total)}</strong></td></tr></tfoot>
+      <tfoot><tr><td colspan="3" style="padding:8px;text-align:right;"><strong>Total</strong></td><td style="padding:8px;text-align:right;"><strong>${formatCurrency(budget.total)}</strong></td></tr></tfoot>
     </table>
     ${decision}`,
   );

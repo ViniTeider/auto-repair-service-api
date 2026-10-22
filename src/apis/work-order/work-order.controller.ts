@@ -23,7 +23,7 @@ import { RemoveItemQueryDto } from '../../core/dtos/work-order/remove-item-query
 import { OpenWorkOrderDto } from '../../core/dtos/work-order/open-work-order.dto';
 import { WorkOrderActionEnum } from '../../core/enums/work-order/work-order-action.enum';
 import { JwtAuthGuard } from '../../core/guards/jwt-auth.guard';
-import { WorkOrderService } from './services/work-order.service';
+import { WorkOrderService } from './work-order.service';
 
 @ApiTags('work-order')
 @ApiBearerAuth()

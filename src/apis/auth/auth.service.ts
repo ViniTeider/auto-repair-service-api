@@ -13,9 +13,9 @@ export class AuthService {
     private readonly jwt: JwtService,
     config: ConfigService,
   ) {
-    this.adminEmail = this.required(config, 'ADMIN_DEFAULT_EMAIL');
+    this.adminEmail = this.required(config, 'ADMIN_EMAIL');
     this.adminHash = bcrypt.hashSync(
-      this.required(config, 'ADMIN_DEFAULT_PASSWORD'),
+      this.required(config, 'ADMIN_PASSWORD'),
       10,
     );
   }

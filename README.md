@@ -36,7 +36,7 @@ Controller (HTTP, validação, Swagger, JWT)
 ```
 
 - `src/apis/<funcionalidade>`: módulo, controller, service e repository de cada contexto.
-- `src/core`: domínio, entidades, DTOs, enums, guard, filtro de exceções, e-mail e migrations.
+- `src/core`: domínio, entidades, DTOs, enums, guard, filtro de exceções, e-mail, templates (e-mail e página do orçamento) e a migration inicial.
 - O agregado `WorkOrder` concentra as regras da OS; os fluxos que mexem em estoque rodam em
   transação.
 
@@ -70,8 +70,8 @@ Escolhido por:
 
 ## Execução
 
-Copie `.env.example` para `.env`. As variáveis `JWT_SECRET`, `ADMIN_DEFAULT_EMAIL` e
-`ADMIN_DEFAULT_PASSWORD` são obrigatórias: a API não sobe sem elas.
+Copie `.env.example` para `.env`. As variáveis `JWT_SECRET`, `ADMIN_EMAIL` e
+`ADMIN_PASSWORD` são obrigatórias: a API não sobe sem elas.
 
 **Tudo com Docker** (banco e API):
 
@@ -123,8 +123,8 @@ em `POST /auth/login` e use o token no botão **Authorize**.
 
 ## Autenticação
 
-`POST /auth/login` com o e-mail e a senha configurados em `ADMIN_DEFAULT_EMAIL` e
-`ADMIN_DEFAULT_PASSWORD` devolve um JWT (`accessToken`). O `.env.example` traz valores de
+`POST /auth/login` com o e-mail e a senha configurados em `ADMIN_EMAIL` e
+`ADMIN_PASSWORD` devolve um JWT (`accessToken`). O `.env.example` traz valores de
 demonstração para essas variáveis; troque-os em qualquer ambiente real. O token expira após o tempo
 de `JWT_EXPIRATION` (por exemplo `1d` ou `2h`; um número puro vale segundos; padrão `1d`). Envie o
 token no cabeçalho `Authorization: Bearer <token>`.
@@ -183,9 +183,10 @@ src/
     domain/               WorkOrder, objetos de valor e erro de domínio
     entities/             entidades do banco
     dtos/  enums/         contratos de entrada e saída, enumerações
-    database/             data source e migrations
+    database/             data source e migration inicial
     guards/  filters/     JWT e tratamento de erros
     email/                envio do orçamento
+    templates/            HTML do e-mail e da página do orçamento
 test/
   unit/                   testes unitários
   *.e2e-spec.ts           testes de integração

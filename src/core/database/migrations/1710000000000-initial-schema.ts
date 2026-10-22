@@ -6,12 +6,6 @@ export class InitialSchema1710000000000 implements MigrationInterface {
   async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`
       CREATE EXTENSION IF NOT EXISTS pgcrypto;
-      CREATE TABLE IF NOT EXISTS admin_user (
-        id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-        email varchar(255) NOT NULL UNIQUE,
-        "passwordHash" varchar(255) NOT NULL,
-        "createdAt" timestamptz NOT NULL DEFAULT now()
-      );
       CREATE TABLE IF NOT EXISTS customer (
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         document varchar(14) NOT NULL UNIQUE,
@@ -68,10 +62,18 @@ export class InitialSchema1710000000000 implements MigrationInterface {
         "unitPriceInCents" integer NOT NULL CHECK ("unitPriceInCents" >= 0),
         quantity integer NOT NULL CHECK (quantity > 0)
       );
+      CREATE TABLE IF NOT EXISTS work_order_history (
+        id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+        "workOrderId" uuid NOT NULL REFERENCES work_order(id) ON DELETE CASCADE,
+        status varchar(30) NOT NULL,
+        "createdAt" timestamptz NOT NULL DEFAULT now()
+      );
+      CREATE INDEX IF NOT EXISTS "IDX_work_order_history_workOrderId" ON work_order_history ("workOrderId");
+      -- An ADJUSTMENT movement stores the new balance, which may be zero.
       CREATE TABLE IF NOT EXISTS stock_movement (
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
         "partId" uuid NOT NULL REFERENCES part(id),
-        quantity integer NOT NULL CHECK (quantity > 0),
+        quantity integer NOT NULL CHECK (quantity >= 0),
         type varchar(20) NOT NULL,
         reason varchar(255),
         "workOrderId" uuid,
@@ -82,7 +84,7 @@ export class InitialSchema1710000000000 implements MigrationInterface {
 
   async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
-      'DROP TABLE IF EXISTS stock_movement, work_order_item, work_order, part, service, vehicle, customer, admin_user',
+      'DROP TABLE IF EXISTS stock_movement, work_order_history, work_order_item, work_order, part, service, vehicle, customer',
     );
   }
 }

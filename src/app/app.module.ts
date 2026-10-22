@@ -16,7 +16,6 @@ import { HttpExceptionFilter } from '../core/filters/http-exception.filter';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    // The connection reads DB_* through ConfigService so values from the .env file are applied.
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({

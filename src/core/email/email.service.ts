@@ -4,7 +4,7 @@ import nodemailer, { Transporter } from 'nodemailer';
 import {
   BudgetEmailData,
   budgetEmailTemplate,
-} from './templates/budget-email.template';
+} from '../templates/budget-email.template';
 
 export type SendBudgetEmailParams = Omit<BudgetEmailData, 'budgetUrl'> & {
   to: string;

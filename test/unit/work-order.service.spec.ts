@@ -1,5 +1,5 @@
 import { jest } from '@jest/globals';
-import { WorkOrderService } from '../../src/apis/work-order/services/work-order.service';
+import { WorkOrderService } from '../../src/apis/work-order/work-order.service';
 import { CatalogItemKindEnum } from '../../src/core/enums/catalog-item-kind.enum';
 import { WorkOrderActionEnum } from '../../src/core/enums/work-order/work-order-action.enum';
 import { WorkOrderEntity } from '../../src/core/entities/work-order.entity';
