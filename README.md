@@ -96,10 +96,11 @@ A API fica em `http://localhost:3000`.
 
 ### E-mail do orçamento
 
-`POST /work-order/:code/send-budget` envia o orçamento ao e-mail do cliente da OS. Configure
-`SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASSWORD`, `EMAIL_FROM` e
-`APP_PUBLIC_URL` (base dos links do e-mail). Sem `SMTP_HOST`, o e-mail é gerado mas não é
-entregue, e a API registra um aviso no log.
+`POST /work-order/:code/send-budget` envia o orçamento ao e-mail do cliente da OS. Configure no seu
+`.env` (nunca no repositório) `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`,
+`SMTP_PASSWORD` e `EMAIL_FROM` com os dados do seu provedor de e-mail. `APP_PUBLIC_URL` é a base
+dos links do e-mail. Com `SMTP_HOST` vazio, o e-mail é gerado mas não é enviado, e a API registra um
+aviso no log.
 
 ## Testes
 
@@ -191,16 +192,18 @@ test/
   unit/                   testes unitários
   *.e2e-spec.ts           testes de integração
 docs/
-  ddd/                    linguagem ubíqua e mapeamento com o código
+  ddd/                    event storming (PDF), diagramas C4 (PDF), linguagem ubíqua e mapeamento
   quality/  security/     cobertura e segurança
 ```
 
 ## Documentação DDD
 
+- [Event Storming no Miro](https://miro.com/app/board/uXjVEa9LEbQ=/?share_link_id=39615751943)
+- [Event Storming (PDF)](docs/ddd/event-storming.pdf)
+- [Diagramas C4, níveis 1 a 3 (PDF)](docs/ddd/diagramas.pdf)
 - [Linguagem ubíqua e glossário](docs/ddd/linguagem-ubiqua.md)
 - [Mapeamento entre a documentação e o código](docs/ddd/mapeamento-codigo.md)
-- Event Storming no Miro: _link a ser adicionado pelo grupo_
 
 ## Vídeo da entrega
 
-_Link a ser adicionado pelo grupo._
+_Link do vídeo no YouTube a ser adicionado pelo grupo (público, até 15 minutos)._
