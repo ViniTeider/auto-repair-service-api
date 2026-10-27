@@ -12,14 +12,13 @@ docker run --rm -v "$PWD:/repo" aquasec/trivy fs /repo
 
 Secrets belong in `.env`; only `.env.example` may be committed.
 
-## Latest validation
+## Validation
 
-Validated on 2026-10-22:
+| Check                                                    | Result                                                                              |
+| -------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `npm audit --audit-level=high`                           | **Failed** — 6 vulnerabilities: 2 high, 2 moderate, 2 low                           |
+| `docker run --rm -v "$PWD:/repo" aquasec/trivy fs /repo` | **Passed** — no production dependency vulnerabilities or secrets detected           |
 
-| Check                                                    | Result                                                                    |
-| -------------------------------------------------------- | ------------------------------------------------------------------------- |
-| `npm audit --audit-level=high`                           | **Failed** — 25 vulnerabilities: 2 high, 21 moderate, 2 low, 0 critical   |
-| `docker run --rm -v "$PWD:/repo" aquasec/trivy fs /repo` | **Passed** — no production dependency vulnerabilities or secrets detected |
-
-The dependency scan improved after updating `nodemailer` to `10.2.1`. Remaining audit
-findings are primarily transitive development dependencies and require targeted upgrades.
+The remaining npm audit findings are transitive development dependencies (`tmp` and
+`undici`, through `@nestjs/mau`); the production dependency findings (`body-parser`
+and `multer`) have been fixed.
