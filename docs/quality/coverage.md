@@ -8,12 +8,10 @@ The critical domain modules are covered by focused unit tests for:
 - Work-order budget calculation, status transitions, rejection behavior, and item invariants.
 - Authentication and API integration flows as the API modules are expanded.
 
-## Latest validation
+## Validation
 
-Validated on 2026-10-22:
-
-Result: **passed** — 4 test suites and 19 tests passed. The configured critical-domain
-threshold was satisfied:
+The latest run passed — 4 test suites and 19 tests passed. The configured
+critical-domain threshold was satisfied:
 
 | Scope                           | Statements |  Lines |
 | ------------------------------- | ---------: | -----: |

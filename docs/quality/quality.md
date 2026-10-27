@@ -6,9 +6,7 @@ The repository quality checks are:
 - `npm run build` for the production TypeScript build.
 - `DB_HOST=localhost npm run test:e2e -- --runInBand` for PostgreSQL-backed integration tests.
 
-## Latest validation
-
-Validated on 2026-10-22:
+## Validation
 
 | Command | Result |
 | --- | --- |

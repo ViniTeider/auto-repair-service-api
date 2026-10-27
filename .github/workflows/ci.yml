@@ -42,7 +42,7 @@ jobs:
             - name: Run linter
               run: npm run lint --if-present
 
-            - name: Run unit & integration tests with coverage
+            - name: Run unit tests with coverage
               run: npm run test:cov --if-present
               env:
                   DB_HOST: localhost
@@ -54,6 +54,16 @@ jobs:
 
             - name: Build application
               run: npm run build --if-present
+
+            - name: Run end-to-end tests
+              run: npm run test:e2e -- --runInBand
+              env:
+                  DB_HOST: localhost
+                  DB_PORT: 5432
+                  DB_USER: postgres
+                  DB_PASSWORD: postgres
+                  DB_NAME: repair_shop_db
+                  JWT_SECRET: ci-test-secret
 
     security-scan:
         name: Trivy Security Scan
