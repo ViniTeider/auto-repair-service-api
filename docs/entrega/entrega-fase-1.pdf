@@ -4,7 +4,7 @@
 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
 endobj
 2 0 obj
-<< /Type /Pages /Kids [4 0 R 9 0 R 18 0 R 20 0 R] /Count 4 >>
+<< /Type /Pages /Kids [4 0 R 9 0 R 18 0 R] /Count 3 >>
 endobj
 3 0 obj
 << /Length 903 >>
@@ -79,7 +79,7 @@ endobj
 << /Type /Annot /Subtype /Link /Rect [48 571 550 586] /Border [0 0 0] /A << /S /URI /URI (https://miro.com/app/board/uXjVEa9LEbQ=/?share_link_id=39615751943) >> >>
 endobj
 8 0 obj
-<< /Length 767 >>
+<< /Length 644 >>
 stream
 BT
 /F1 11 Tf
@@ -122,12 +122,6 @@ BT
 0 -18 Td
 /F1 10 Tf
 (https://miro.com/app/board/uXjVEa9LEbQ=/?share_link_id=39615751943) Tj
-0 -18 Td
-/F1 10 Tf
-() Tj
-0 -18 Td
-/F1 10 Tf
-(Os links devem permanecer acessiveis sem solicitacao manual de permissao.) Tj
 0 -18 Td
 ET
 endstream
@@ -217,88 +211,32 @@ endobj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 1 0 R >> >> /Contents 17 0 R /Annots [10 0 R 11 0 R 12 0 R 13 0 R 14 0 R 15 0 R 16 0 R] >>
 endobj
 19 0 obj
-<< /Length 911 >>
-stream
-BT
-/F1 11 Tf
-48 790 Td
-/F1 15 Tf
-(ESCOPO E VALIDACOES) Tj
-0 -18 Td
-/F1 10 Tf
-() Tj
-0 -18 Td
-/F1 10 Tf
-(Autenticacao JWT e CRUD de clientes, veiculos, servicos e pecas.) Tj
-0 -18 Td
-/F1 10 Tf
-(Controle de estoque, ordens de servico e aprovacao de orcamentos.) Tj
-0 -18 Td
-/F1 10 Tf
-(Pagina HTML publica, envio SMTP e historico de status da OS.) Tj
-0 -18 Td
-/F1 10 Tf
-() Tj
-0 -18 Td
-/F1 10 Tf
-(Testes unitarios: 4 suites e 19 testes aprovados.) Tj
-0 -18 Td
-/F1 10 Tf
-(Testes E2E PostgreSQL: 2 suites e 16 testes aprovados.) Tj
-0 -18 Td
-/F1 10 Tf
-(Cobertura do dominio critico acima de 80%.) Tj
-0 -18 Td
-/F1 10 Tf
-(Build e lint aprovados.) Tj
-0 -18 Td
-/F1 10 Tf
-(Trivy: nenhuma vulnerabilidade em dependencias de producao.) Tj
-0 -18 Td
-/F1 10 Tf
-(Trivy: nenhum segredo detectado.) Tj
-0 -18 Td
-/F1 10 Tf
-() Tj
-0 -18 Td
-/F1 10 Tf
-(A entrega considera exclusivamente a branch main no commit informado.) Tj
-0 -18 Td
-ET
-endstream
-endobj
-20 0 obj
-<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 1 0 R >> >> /Contents 19 0 R  >>
-endobj
-21 0 obj
 << /Type /Catalog /Pages 2 0 R >>
 endobj
 xref
-0 22
+0 20
 0000000000 65535 f 
 0000000015 00000 n 
 0000000085 00000 n 
-0000000162 00000 n 
-0000001116 00000 n 
-0000001243 00000 n 
-0000001409 00000 n 
-0000001565 00000 n 
-0000001744 00000 n 
-0000002562 00000 n 
-0000002716 00000 n 
-0000002921 00000 n 
-0000003121 00000 n 
-0000003327 00000 n 
-0000003534 00000 n 
-0000003735 00000 n 
-0000003937 00000 n 
-0000004140 00000 n 
-0000005357 00000 n 
-0000005544 00000 n 
-0000006507 00000 n 
-0000006636 00000 n 
+0000000155 00000 n 
+0000001109 00000 n 
+0000001236 00000 n 
+0000001402 00000 n 
+0000001558 00000 n 
+0000001737 00000 n 
+0000002432 00000 n 
+0000002586 00000 n 
+0000002791 00000 n 
+0000002991 00000 n 
+0000003197 00000 n 
+0000003404 00000 n 
+0000003605 00000 n 
+0000003807 00000 n 
+0000004010 00000 n 
+0000005227 00000 n 
+0000005414 00000 n 
 trailer
-<< /Size 22 /Root 21 0 R >>
+<< /Size 20 /Root 19 0 R >>
 startxref
-6686
+5464
 %%EOF
