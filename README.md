@@ -207,3 +207,7 @@ docs/
 ## Vídeo da entrega
 
 [Vídeo da entrega no YouTube](https://www.youtube.com/watch?v=XH7MrXWnILc)
+
+## PDF da entrega
+
+[Arquivo PDF único para avaliação](docs/entrega/entrega-fase-1.pdf)

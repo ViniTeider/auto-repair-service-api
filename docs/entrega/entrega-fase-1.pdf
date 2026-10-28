@@ -1,0 +1,113 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R /Annots [6 0 R 7 0 R 8 0 R 9 0 R 10 0 R 11 0 R 12 0 R 13 0 R 14 0 R 15 0 R] >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+5 0 obj
+<< /Length 2140 >>
+stream
+BT
+/F1 14 Tf
+48 800 Td
+(SOAT - Software Architecture - Fase 1) Tj
+/F1 9 Tf
+0 -24 Td
+(ENTREGA DO PROJETO - GRUPO 10) Tj
+0 -18 Td
+(Curso: SOAT - Software Architecture) Tj
+0 -15 Td
+(Fase: 1) Tj
+0 -15 Td
+(Integrantes: Vinicius Teider - RM378906 - Discord: vina_t) Tj
+0 -15 Td
+(Thomas Lorenzo Bavaresco Pinto - RM378914 - Discord: thomasplay) Tj
+0 -15 Td
+(Linguagem: TypeScript. Tecnologias: Node.js, NestJS, TypeORM, PostgreSQL, JWT, bcrypt,) Tj
+0 -15 Td
+(class-validator, Swagger/OpenAPI, Helmet, Nodemailer, Jest, Supertest, oxlint e Docker.) Tj
+0 -27 Td
+(REPOSITORIO) Tj
+0 -15 Td
+(https://github.com/ViniTeider/auto-repair-service-api) Tj
+0 -15 Td
+(Branch avaliada: main) Tj
+0 -15 Td
+(Commit avaliado: 2e178d7) Tj
+0 -27 Td
+(VIDEO PUBLICO) Tj
+0 -15 Td
+(https://www.youtube.com/watch?v=XH7MrXWnILc) Tj
+0 -27 Td
+(DOCUMENTACAO DDD NO MIRO) Tj
+0 -15 Td
+(https://miro.com/app/board/uXjVEa9LEbQ=/?share_link_id=39615751943) Tj
+0 -27 Td
+(DOCUMENTOS DO PROJETO) Tj
+0 -15 Td
+(Event Storming: https://github.com/ViniTeider/auto-repair-service-api/blob/main/docs/ddd/event-storming.pdf) Tj
+0 -15 Td
+(Diagramas C4: https://github.com/ViniTeider/auto-repair-service-api/blob/main/docs/ddd/diagramas.pdf) Tj
+0 -15 Td
+(Linguagem ubiqua: https://github.com/ViniTeider/auto-repair-service-api/blob/main/docs/ddd/linguagem-ubiqua.md) Tj
+0 -15 Td
+(Mapeamento DDD: https://github.com/ViniTeider/auto-repair-service-api/blob/main/docs/ddd/mapeamento-codigo.md) Tj
+0 -15 Td
+(Qualidade: https://github.com/ViniTeider/auto-repair-service-api/blob/main/docs/quality/quality.md) Tj
+0 -15 Td
+(Cobertura: https://github.com/ViniTeider/auto-repair-service-api/blob/main/docs/quality/coverage.md) Tj
+0 -15 Td
+(Seguranca: https://github.com/ViniTeider/auto-repair-service-api/blob/main/docs/security/security.md) Tj
+0 -27 Td
+(VALIDACOES) Tj
+0 -15 Td
+(Testes unitarios: 4 suites e 19 testes. Testes E2E PostgreSQL: 2 suites e 16 testes.) Tj
+0 -15 Td
+(Cobertura do dominio critico acima de 80%. Build, lint e Trivy aprovados.) Tj
+0 -15 Td
+(Trivy: nenhuma vulnerabilidade em dependencias de producao e nenhum segredo detectado.) Tj
+0 -27 Td
+(A entrega considera exclusivamente a branch main no commit informado.) Tj
+0 -15 Td
+(Os links devem permanecer acessiveis sem solicitacao manual de permissao.) Tj
+ET
+endstream
+endobj
+6 0 obj
+<< /Type /Annot /Subtype /Link /Rect [48 710 500 725] /Border [0 0 0] /A << /S /URI /URI (https://github.com/ViniTeider/auto-repair-service-api) >> >>
+endobj
+7 0 obj
+<< /Type /Annot /Subtype /Link /Rect [48 665 500 680] /Border [0 0 0] /A << /S /URI /URI (https://www.youtube.com/watch?v=XH7MrXWnILc) >> >>
+endobj
+8 0 obj
+<< /Type /Annot /Subtype /Link /Rect [48 620 540 635] /Border [0 0 0] /A << /S /URI /URI (https://miro.com/app/board/uXjVEa9LEbQ=/?share_link_id=39615751943) >> >>
+endobj
+9 0 obj
+<< /Type /Annot /Subtype /Link /Rect [48 545 540 560] /Border [0 0 0] /A << /S /URI /URI (https://github.com/ViniTeider/auto-repair-service-api/blob/main/docs/ddd/event-storming.pdf) >> >>
+endobj
+10 0 obj
+<< /Type /Annot /Subtype /Link /Rect [48 530 540 545] /Border [0 0 0] /A << /S /URI /URI (https://github.com/ViniTeider/auto-repair-service-api/blob/main/docs/ddd/diagramas.pdf) >> >>
+endobj
+11 0 obj
+<< /Type /Annot /Subtype /Link /Rect [48 515 540 530] /Border [0 0 0] /A << /S /URI /URI (https://github.com/ViniTeider/auto-repair-service-api/blob/main/docs/ddd/linguagem-ubiqua.md) >> >>
+endobj
+12 0 obj
+<< /Type /Annot /Subtype /Link /Rect [48 500 540 515] /Border [0 0 0] /A << /S /URI /URI (https://github.com/ViniTeider/auto-repair-service-api/blob/main/docs/ddd/mapeamento-codigo.md) >> >>
+endobj
+13 0 obj
+<< /Type /Annot /Subtype /Link /Rect [48 485 540 500] /Border [0 0 0] /A << /S /URI /URI (https://github.com/ViniTeider/auto-repair-service-api/blob/main/docs/quality/quality.md) >> >>
+endobj
+14 0 obj
+<< /Type /Annot /Subtype /Link /Rect [48 470 540 485] /Border [0 0 0] /A << /S /URI /URI (https://github.com/ViniTeider/auto-repair-service-api/blob/main/docs/quality/coverage.md) >> >>
+endobj
+15 0 obj
+<< /Type /Annot /Subtype /Link /Rect [48 455 540 470] /Border [0 0 0] /A << /S /URI /URI (https://github.com/ViniTeider/auto-repair-service-api/blob/main/docs/security/security.md) >> >>
+endobj
+%%EOF
