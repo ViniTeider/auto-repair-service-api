@@ -206,4 +206,4 @@ docs/
 
 ## Vídeo da entrega
 
-_Link do vídeo no YouTube a ser adicionado pelo grupo (público, até 15 minutos)._
+[Vídeo da entrega no YouTube](https://www.youtube.com/watch?v=XH7MrXWnILc)
